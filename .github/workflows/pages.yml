@@ -16,12 +16,11 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+# Kokoaminen ja julkaisu ovat eri töitä: samassa työssä julkaisu ehti hakea pakettia ennen kuin se näkyi
+# ajon pakettilistassa ("No artifacts named github-pages") ja ajo kaatui.
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Check module syntax
@@ -41,5 +40,13 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - id: deployment
         uses: actions/deploy-pages@v4
