@@ -12,7 +12,7 @@
   <title>Joulukalenteri</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fredoka:wght@500;600&family=Jost:wght@400;500&display=swap">
   <style>
     :root {
       color-scheme: dark;
@@ -23,6 +23,7 @@
       --glass: rgba(16, 21, 26, 0.66);
       --edge: rgba(255, 255, 255, 0.09);
       --serif: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      --round: "Fredoka", "Nunito", "Varela Round", -apple-system, sans-serif;
       --sans: "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
       --safe-b: env(safe-area-inset-bottom, 0px);
@@ -83,8 +84,8 @@
     body.titled #intro > :nth-child(2) { transition-delay: 0.3s; }
     body.titled #intro > :nth-child(3) { transition-delay: 0.45s; }
     body.titled #intro > :nth-child(4) { transition-delay: 0.65s; }
-    #intro h1 { margin: 6px 0 0; font: 500 clamp(44px, 12.5vw, 92px)/1.05 var(--serif); letter-spacing: -0.01em; white-space: nowrap; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
-    #intro p.lead { margin: 0 0 22px; color: var(--cream); font: italic 500 clamp(22px, 6vw, 34px)/1.15 var(--serif); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6); }
+    #intro h1 { margin: 6px 0 0; font: 600 clamp(42px, 12vw, 88px)/1.1 var(--round); letter-spacing: 0.005em; white-space: nowrap; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
+    #intro p.lead { margin: 0 0 24px; color: var(--cream); font: 500 clamp(19px, 5.2vw, 28px)/1.25 var(--round); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6); }
 
     /* calendar chrome: the title and the status line stay readable over the knitted wall */
     body::before, body::after {
@@ -127,13 +128,13 @@
     }
     @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 5px; } }
 
-    #toast {
-      position: fixed; left: 50%; top: calc(64px + var(--safe-t)); z-index: 6; transform: translate(-50%, -8px); opacity: 0;
-      padding: 11px 18px; border-radius: 999px; background: var(--glass); border: 1px solid var(--edge);
-      -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); font-size: 14px; white-space: nowrap; pointer-events: none;
-      transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+    #tease {
+      position: fixed; left: 50%; top: 70%; z-index: 6; transform: translate(-50%, 0) scale(0.9); opacity: 0;
+      padding: 12px 22px; border-radius: 999px; background: var(--cream); color: #5a1220; white-space: nowrap; pointer-events: none;
+      font: 600 clamp(16px, 4.6vw, 20px)/1.2 var(--round); box-shadow: 0 8px 26px rgba(40, 0, 10, 0.4);
+      transition: opacity 0.3s var(--ease), transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.3);
     }
-    #toast.on { opacity: 1; transform: translate(-50%, 0); }
+    #tease.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
     /* what a door holds */
     #card {
@@ -176,7 +177,7 @@
   <div id="top"></div>
   <div id="hint"><button type="button"></button></div>
   <div id="status"><span></span><button class="btn small" type="button" hidden></button></div>
-  <div id="toast" role="status"></div>
+  <div id="tease" role="status"></div>
 
   <section id="card" aria-live="polite">
     <p class="eyebrow" id="card-eyebrow"></p>

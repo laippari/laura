@@ -1,9 +1,10 @@
 // Paperikuvat: valkokehyksiset valokuvat. Aloituksessa ne liukuvat isoina näkymän läpi ja asettuvat sitten
-// otsikon ympärille reunoille; kalenteriin siirryttäessä ne lentävät pois ja leijailevat läjään kaapin luo.
+// otsikon ympärille reunoille; kalenteriin siirryttäessä ne lentävät pois ja palaavat samaan sommitelmaan
+// kaapin ympärille, mutta kuvat vaihtavat paikkaa.
 import * as THREE from 'three';
 import { rng } from './textures.js';
 
-const FALL = 1.9, STAGGER = 0.07, Z = -1.7;
+const Z = -1.7;
 
 // Where the photos rest around the title: [x, y, size] in shares of the view's half width and half height,
 // the most prominent places first. Upright screens: above and below the title. Wide screens: on both sides of it.
@@ -46,23 +47,19 @@ export function buildPhotos(scene, tex, list) {
     return {
       g, i, k: n - 1 - i, // k: order of appearance, the last photos in the list come first
       u: rnd(), v: rnd(), side: i % 2 ? 1 : -1, rz: (rnd() - 0.5) * 0.9, ph: rnd() * 6.28, drift: 0.8 + rnd() * 1.2,
-      spin: (rnd() - 0.5) * 3, pile: new THREE.Vector3(), rest: new THREE.Vector3(), restSize: 1, away: new THREE.Vector3(),
+      spin: (rnd() - 0.5) * 3, rest: new THREE.Vector3(), restSize: 1, away: new THREE.Vector3(),
     };
   });
 
-  let view = { tall: true, hw: 3, hh: 6.5, cy: 0 }, pileSize = 1.2;
+  let view = { tall: true, hw: 3, hh: 6.5, cy: 0 }, shift = 0;
   let mode = 'hidden', t0 = 0;
 
   function layout(v) {
     view = v;
-    pileSize = v.tall ? 1.2 : 1.3;
     const slots = v.tall ? FRAME_TALL : FRAME_WIDE;
     for (const o of photos) {
       const z = Z + o.i * 0.035;
-      // the heap by the cabinet: under it on upright screens, beside its foot on wide ones
-      if (v.tall) o.pile.set((o.u - 0.5) * 4.5, -4.5 + (o.v - 0.5) * 1.05, z);
-      else o.pile.set(o.side * (3.5 + o.u * 3.9), -2.9 + (o.v - 0.5) * 2.2, z);
-      const s = slots[o.k % slots.length];
+      const s = slots[(o.k + shift) % slots.length];
       o.rest.set(s[0] * v.hw, v.cy + s[1] * v.hh, z);
       o.restSize = s[2] * (v.tall ? 1 : 1.25);
       o.away.set(s[0], s[1], 0).normalize().multiplyScalar(Math.hypot(v.hw, v.hh) + 3).add(new THREE.Vector3(0, v.cy, z));
@@ -70,7 +67,8 @@ export function buildPhotos(scene, tex, list) {
   }
 
   const start = (m) => (t) => { mode = m; t0 = t; };
-  const duration = () => n * STAGGER + FALL;
+  // the same composition with the photos in other places: used when the calendar comes in
+  const reshuffle = () => { shift = (shift + 7) % n; layout(view); };
 
   function update(dt, t) {
     if (mode === 'hidden') return;
@@ -95,25 +93,8 @@ export function buildPhotos(scene, tex, list) {
         g.scale.setScalar(g.scale.x + (o.restSize - g.scale.x) * k);
         const rz = mode === 'frame' ? o.rz * 0.55 + Math.sin(t * 0.6 + o.ph) * 0.035 : o.rz + o.spin;
         g.rotation.set(g.rotation.x * (1 - k), g.rotation.y * (1 - k), g.rotation.z + (rz - g.rotation.z) * k);
-      } else if (mode === 'drop') {
-        const p = Math.min(1, (e - o.i * STAGGER) / FALL);
-        if (p <= 0) { g.visible = false; continue; }
-        g.visible = true;
-        g.scale.setScalar(pileSize);
-        if (p < 1) {
-          const left = 1 - p, fall = 1 - left * left;
-          g.position.set(
-            o.pile.x + Math.sin(p * Math.PI * 2.6 + o.ph) * o.drift * left,
-            THREE.MathUtils.lerp(o.pile.y + 15, o.pile.y, fall),
-            o.pile.z + 1.2 * left,
-          );
-          g.rotation.set(Math.sin(p * 9 + o.ph) * 0.9 * left, Math.cos(p * 7 + o.ph) * 0.8 * left, o.rz + o.spin * left);
-        } else {
-          g.position.lerp(o.pile, 1 - Math.exp(-dt * 6));
-          g.rotation.set(0, 0, o.rz);
-        }
       }
     }
   }
-  return { layout, parade: start('parade'), frame: start('frame'), exit: start('exit'), drop: start('drop'), duration, update };
+  return { layout, reshuffle, parade: start('parade'), frame: start('frame'), exit: start('exit'), update };
 }

@@ -7,13 +7,13 @@ https://laippari.github.io/laura/
 ## Miten se toimii
 
 1. **Aloitus** – lyhyt lataus (sykkivä sydän), sitten valokuvat liukuvat isoina näkymän läpi ja asettuvat reunoille
-   otsikon *Laura ❤️ Ville* ympärille. Napista *Siirry kalenteriin* kuvat lentävät pois, leijailevat läjään ja kaappi
-   laskeutuu niiden eteen. Napautus kuvien aikana hyppää suoraan otsikkoon.
+   otsikon *Laura ❤️ Ville* ympärille. Napista *Siirry kalenteriin* kuvat lentävät pois ja palaavat samaan sommitelmaan
+   eri paikkoihin, ja kaappi laskeutuu keskelle. Napautus kuvien aikana hyppää suoraan otsikkoon.
 2. **Kalenteri** – kamera näyttää koko kaapin ja liukuu sitten päivän luukulle, jonka alla lukee *Avaa tästä*.
    Luukut, jotka saa avata, hehkuvat reunoiltaan. Kaappia voi kallistella vetämällä.
 3. **Luukku** – napautus avaa luukun, sisältö leijuu esiin omaan näkymäänsä (esinettä voi pyörittää vetämällä)
    ja alle tulee otsikko ja viesti. *Sulje luukku* palauttaa koko kalenteriin.
-4. Avatut luukut jäävät raolleen ja niihin voi palata. Tulevan päivän luukku vain kolahtaa ja kertoo, milloin se aukeaa.
+4. Avatut luukut jäävät raolleen ja niihin voi palata. Tulevan päivän luukku vain kolahtaa, ja kaapin alle tulee *Malta vielä hetki, murunen 😘* (neljä versiota vuorotellen, `tooEarly` tiedostossa `src/content.js`).
 
 Luukut aukeavat laitteen kellon mukaan 1.–24.12.2026; sen jälkeen kaikki pysyvät auki. Avatut luukut muistetaan
 selaimessa (`localStorage`), eli muisti on laitekohtainen.

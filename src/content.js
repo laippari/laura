@@ -17,7 +17,7 @@ export const TEXTS = {
   pageTitle: 'Lauran joulukalenteri',
   introEyebrow: 'Joulukuu 2026',
   introTitle: 'Laura ❤️ Ville',
-  introText: 'Sinun joulukalenterisi, Villeltä',
+  introText: 'Tässä muru sulle joulukalenteri 😘',
   enter: 'Siirry kalenteriin',
   hint: 'Avaa tästä',
   close: 'Sulje luukku',
@@ -30,8 +30,8 @@ export const TEXTS = {
   statusDone: 'Päivän luukku on avattu. Huomenna aukeaa seuraava.',
   statusUnopened: { one: 'Yksi luukku on vielä avaamatta', many: '{n} luukkua on vielä avaamatta' },
   statusAfter: 'Hyvää joulua, Laura',
-  lockedTomorrow: 'Luukku {n} aukeaa huomenna',
-  locked: 'Luukku {n} aukeaa {n}.12.',
+  // kun Laura yrittää avata luukkua, jonka päivä ei ole vielä tullut (vuorotellen)
+  tooEarly: ['Malta vielä hetki, murunen 😘', 'Malta muru vielä hetki 😘', 'Malta murunen vielä hetki 😘', 'Malta hetki vielä, muru 😘'],
   wholeCalendar: 'Koko kalenteri',
   noWebGL: 'Kalenteri tarvitsee selaimen, joka osaa piirtää 3D-grafiikkaa. Kokeile toisella selaimella tai laitteella.',
 };

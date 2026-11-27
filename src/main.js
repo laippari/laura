@@ -211,9 +211,9 @@ const wide = matchMedia('(min-width: 760px) and (min-aspect-ratio: 1/1)'); // sa
 const portrait = () => !wide.matches;
 
 function poseOverview() {
-  // room around the cabinet for the knitted wall; on upright screens the cabinet sits higher, above the heap of photos
-  const d = fitDist(GRID.width * 1.36, GRID.height * 1.5), y = portrait() ? -0.95 : 0;
-  return { pos: new THREE.Vector3(0, y, GRID.front + d), target: new THREE.Vector3(0, y, 0) };
+  // the cabinet in the middle, with room around it for the knitted wall and the photos
+  const d = fitDist(GRID.width * 1.36, GRID.height * 1.5);
+  return { pos: new THREE.Vector3(0, 0, GRID.front + d), target: new THREE.Vector3(0, 0, 0) };
 }
 const poseIntro = poseOverview;
 function poseFocus(door) {
@@ -271,7 +271,7 @@ function refreshDoors() {
 
 const ui = {
   status: $('status'), statusText: $('status').querySelector('span'), statusBtn: $('status').querySelector('button'),
-  hint: $('hint'), toast: $('toast'), card: $('card'),
+  hint: $('hint'), tease: $('tease'), card: $('card'),
 };
 let statusAction = null;
 function updateStatus() {
@@ -299,12 +299,15 @@ function updateStatus() {
 }
 ui.statusBtn.addEventListener('click', () => { if (mode === 'calendar' && statusAction) statusAction(); });
 
-let toastTimer = 0;
-function toast(text) {
-  ui.toast.textContent = text;
-  ui.toast.classList.add('on');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => ui.toast.classList.remove('on'), 2600);
+// a playful line under the cabinet when a door is tried too early
+let teaseTimer = 0, teaseN = 0;
+function tease() {
+  ui.tease.textContent = TEXTS.tooEarly[teaseN++ % TEXTS.tooEarly.length];
+  ui.tease.classList.remove('on');
+  void ui.tease.offsetWidth; // restart the pop-in
+  ui.tease.classList.add('on');
+  clearTimeout(teaseTimer);
+  teaseTimer = setTimeout(() => ui.tease.classList.remove('on'), 2800);
 }
 
 // ---------- kulku ----------
@@ -312,18 +315,19 @@ function toast(text) {
 let away = 1; // 1: the cabinet is still up above the view, 0: it has come down into place
 
 async function enter() {
-  if (mode !== 'intro' || !titled) return;
+  if (mode !== 'intro' || !document.body.classList.contains('titled')) return;
   mode = 'busy';
   $('intro').classList.add('gone');
   document.body.classList.add('cal');
   store.seen = true;
   save();
-  // the photos fly off, flutter back down into a heap, and the cabinet comes down in front of them
+  // the photos fly off and come back to the same composition in other places, and the cabinet comes down among them
   photos.exit(timer.getElapsed());
   view = 'overview';
-  await wait(0.85);
-  photos.drop(timer.getElapsed());
-  await wait(photos.duration() - 1.0);
+  await wait(0.9);
+  photos.reshuffle();
+  photos.frame(timer.getElapsed());
+  await wait(0.5);
   cabinet.visible = true;
   await tween(1.25, (k) => { away = 1 - k; backdrop.setShadow(k); }, easeOutSoft);
   const t = todayDoor();
@@ -389,8 +393,7 @@ async function closeDoor() {
 
 function tryLocked(d) {
   d.vel += 2.6; // a rattle: the leaf springs out a little and falls back
-  const tomorrow = now.today && d.day === now.today + 1;
-  toast(fill(tomorrow ? TEXTS.lockedTomorrow : TEXTS.locked, d.day));
+  tease();
 }
 
 // ---------- osoitin ----------
@@ -482,7 +485,7 @@ for (const d of cal.doors) { d.angle = d.target; d.glowNow = d.glowTo; } // open
 
 // The opening: a short loading moment, the photos glide through the view, then the title with the photos around it.
 // A tap during the photos skips to the title.
-let titled = false, skipParade = null;
+let skipParade = null;
 async function opening() {
   await new Promise((r) => setTimeout(r, Math.max(0, 1900 - performance.now())));
   document.body.classList.add('ready');
@@ -491,8 +494,6 @@ async function opening() {
   skipParade = null;
   photos.frame(timer.getElapsed());
   document.body.classList.add('titled');
-  await wait(0.9);
-  titled = true;
 }
 canvas.addEventListener('pointerdown', () => { if (skipParade) skipParade(); });
 
@@ -516,7 +517,7 @@ function frame(ms) {
   const e = 1 - Math.exp(-dt * (ptr ? 14 : 4));
   drag.yaw += (drag.yawTo - drag.yaw) * e;
   drag.pitch += (drag.pitchTo - drag.pitch) * e;
-  cabinet.rotation.y = (Math.sin(t * 0.8) * 0.1 + Math.sin(t * 1.37 + 0.6) * 0.035) * sway + drag.yaw;
+  cabinet.rotation.y = (Math.sin(t * 0.8) * 0.21 + Math.sin(t * 1.37 + 0.6) * 0.05) * sway + drag.yaw; // wide enough to show the sides
   cabinet.rotation.x = (Math.sin(t * 0.63 + 1) * 0.04 + Math.sin(t * 1.21) * 0.014) * sway + drag.pitch;
   cabinet.rotation.z = Math.sin(t * 0.52 + 2) * 0.018 * sway;
   cabinet.position.y = Math.sin(t * 1.05) * 0.1 * sway + away * 14;
@@ -534,6 +535,13 @@ function frame(ms) {
   if (invite) {
     anchor.set(td.cx, td.cy - GRID.opening / 2 - 0.06, GRID.front).applyMatrix4(cabinet.matrixWorld).project(camera);
     ui.hint.style.transform = `translate(${((anchor.x + 1) / 2) * innerWidth}px, ${((1 - anchor.y) / 2) * innerHeight + 8}px)`;
+  }
+
+  // the playful line stays just under the cabinet, clear of the status line
+  if (ui.tease.classList.contains('on')) {
+    anchor.set(0, -GRID.height / 2 - 0.12, GRID.front).applyMatrix4(cabinet.matrixWorld).project(camera);
+    const y = Math.min(((1 - anchor.y) / 2) * innerHeight + 10, innerHeight - 150);
+    ui.tease.style.top = y + 'px';
   }
 
   backdrop.update(dt, t);
