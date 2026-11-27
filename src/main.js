@@ -482,17 +482,18 @@ function frame(ms) {
     if (k >= 1) { tweens.splice(i, 1); w.done(); }
   }
 
-  // the cabinet floats: a slow sway, calmer when a door is being looked at
+  // the cabinet floats and sways so that it reads as alive; calmer when a door is being looked at
   const swayTo = (view === 'overview' || view === 'intro' ? 1 : 0.4) * (calm ? 0.3 : 1);
   sway += (swayTo - sway) * (1 - Math.exp(-dt * 2));
   const e = 1 - Math.exp(-dt * (ptr ? 14 : 4));
   drag.yaw += (drag.yawTo - drag.yaw) * e;
   drag.pitch += (drag.pitchTo - drag.pitch) * e;
   const show = easeInOut(introK);
-  cabinet.rotation.y = Math.sin(t * 0.42) * 0.075 * sway + drag.yaw + show * (0.42 + 0.3 * Math.sin(t * 0.24));
-  cabinet.rotation.x = Math.sin(t * 0.31 + 1) * 0.028 * sway + drag.pitch;
-  cabinet.rotation.z = Math.sin(t * 0.27 + 2) * 0.011 * sway;
-  cabinet.position.y = Math.sin(t * 0.55) * 0.06 * sway;
+  cabinet.rotation.y = (Math.sin(t * 0.8) * 0.1 + Math.sin(t * 1.37 + 0.6) * 0.035) * sway + drag.yaw + show * (0.38 + 0.34 * Math.sin(t * 0.5));
+  cabinet.rotation.x = (Math.sin(t * 0.63 + 1) * 0.04 + Math.sin(t * 1.21) * 0.014) * sway + drag.pitch;
+  cabinet.rotation.z = Math.sin(t * 0.52 + 2) * 0.018 * sway;
+  cabinet.position.y = Math.sin(t * 1.05) * 0.1 * sway;
+  cabinet.position.x = Math.sin(t * 0.47 + 0.8) * 0.05 * sway;
   cal.update(dt, t);
 
   camera.position.copy(camPos);
