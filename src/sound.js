@@ -1,4 +1,5 @@
-// Äänet: soittorasia soittaa joululauluja taustalla, ja luukuilla on omat äänensä.
+// Äänet: soittorasia soittaa joululauluja taustalla (Deck the Halls, Kulkuset, We Wish You a Merry Christmas,
+// Jouluyö, juhlayö), ja luukuilla on omat äänensä.
 //
 // Kaikki syntetisoidaan selaimessa, joten äänitiedostoja ei ole: sävelmät ovat vanhoja ja vapaita. Äänet
 // "nauhoitetaan" heti latauksen jälkeen valmiiksi (OfflineAudioContext) WAV-muotoon. Musiikki soi tavallisella
@@ -14,6 +15,14 @@ const freq = (name) => {
 
 // Melodies as "note:beats", a bass note for each bar, and the tempo in beats per minute.
 const SONGS = [
+  { // Deck the Halls (fa-la-la-la-la), reipas aloitus
+    bpm: 160, bar: 4, bells: true, times: 2,
+    tune: 'G5:1.5 F5:0.5 E5:1 D5:1 C5:1 D5:1 E5:1 C5:1 D5:0.5 E5:0.5 F5:0.5 D5:0.5 E5:1.5 D5:0.5 C5:1 B4:1 C5:2 ' +
+      'G5:1.5 F5:0.5 E5:1 D5:1 C5:1 D5:1 E5:1 C5:1 D5:0.5 E5:0.5 F5:0.5 D5:0.5 E5:1.5 D5:0.5 C5:1 B4:1 C5:2 ' +
+      'D5:1.5 E5:0.5 F5:1 D5:1 E5:1.5 F5:0.5 G5:1 D5:1 E5:0.5 F#5:0.5 G5:1 A5:0.5 B5:0.5 C6:1 B5:1 A5:1 G5:2 ' +
+      'G5:1.5 F5:0.5 E5:1 D5:1 C5:1 D5:1 E5:1 C5:1 A5:0.5 A5:0.5 A5:0.5 A5:0.5 G5:1.5 F5:0.5 E5:1 D5:1 C5:2',
+    bass: 'C3 C3 G2 C3 C3 C3 G2 C3 G2 C3 D3 G2 C3 C3 F2 C3',
+  },
   { // Kulkuset (Jingle Bells), kertosäe kahdesti
     bpm: 168, bar: 4, bells: true, times: 2,
     tune: 'E5:1 E5:1 E5:2 E5:1 E5:1 E5:2 E5:1 G5:1 C5:1.5 D5:0.5 E5:4 ' +
@@ -37,31 +46,27 @@ const SONGS = [
   },
 ];
 
-// Every note of the songs, one after another, and the length of the whole round.
-function songEvents() {
-  const ev = [];
-  let t = 0.15;
-  for (const song of SONGS) {
-    const spb = 60 / song.bpm;
-    const notes = song.tune.trim().split(/\s+/).map((s) => { const [n, b] = s.split(':'); return [n, +b]; });
-    const bass = song.bass.split(/\s+/);
-    for (let r = 0; r < song.times; r++) {
-      let beat = 0;
-      for (const [n, b] of notes) {
-        ev.push({ at: t + beat * spb, f: freq(n), gain: 0.85, decay: Math.min(2.4, 0.9 + b * spb * 1.4) });
-        beat += b;
-      }
-      bass.forEach((n, i) => {
-        const at = t + ((song.pickup || 0) + i * song.bar) * spb;
-        ev.push({ at, f: freq(n), gain: 0.55, decay: 2.2 });
-        if (song.bar === 4) ev.push({ at: at + 2 * spb, f: freq(n) * 1.5, gain: 0.32, decay: 1.6 });
-      });
-      if (song.bells) for (let k = 0; k < beat; k++) ev.push({ at: t + k * spb, bell: true });
-      t += beat * spb;
+// Every note of one song, and its length with a breath after it.
+function songEvents(song) {
+  const ev = [], spb = 60 / song.bpm;
+  const notes = song.tune.trim().split(/\s+/).map((x) => { const [n, b] = x.split(':'); return [n, +b]; });
+  const bass = song.bass.split(/\s+/);
+  let t = 0.1;
+  for (let r = 0; r < song.times; r++) {
+    let beat = 0;
+    for (const [n, b] of notes) {
+      ev.push({ at: t + beat * spb, f: freq(n), gain: 0.85, decay: Math.min(2.4, 0.9 + b * spb * 1.4) });
+      beat += b;
     }
-    t += 2.2; // a breath between the songs
+    bass.forEach((n, i) => {
+      const at = t + ((song.pickup || 0) + i * song.bar) * spb;
+      ev.push({ at, f: freq(n), gain: 0.55, decay: 2.2 });
+      if (song.bar === 4) ev.push({ at: at + 2 * spb, f: freq(n) * 1.5, gain: 0.32, decay: 1.6 });
+    });
+    if (song.bells) for (let k = 0; k < beat; k++) ev.push({ at: t + k * spb, bell: true });
+    t += beat * spb;
   }
-  return { ev, length: t + 0.6 };
+  return { ev, length: t + 2.4 }; // a breath before the next song
 }
 
 // ---------- synthesis, into any audio context (here: offline ones) ----------
@@ -193,42 +198,48 @@ export function createSound({ storageKey }) {
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ignore */ }
 
   const music = new Audio();
-  music.loop = true;
   music.preload = 'auto';
   music.setAttribute('playsinline', '');
   const VOL = 0.85;
   music.volume = VOL;
-  let musicUrl = null;
-  const quiet = silence(), fxBuf = {}, fxUrl = {};
+  const songs = [], quiet = silence(), fxBuf = {}, fxUrl = {};
+  let song = 0; // the one playing
 
-  // record everything once the page has settled: the effects first (short), then the music
+  // Record everything as soon as the page is up: the first song first, so that it is ready by her first tap, then
+  // the door sounds, then the other songs. The songs play one after another and start over.
+  const recordSong = async (i) => {
+    const { ev, length } = songEvents(SONGS[i]);
+    const buf = await render(length, 24000, (c, o) => {
+      for (const e of ev) {
+        if (e.bell) noise(c, o, e.at, { gain: 0.05, dur: 0.05, hp: 7500 });
+        else tine(c, o, e.f, e.at, e);
+      }
+    }, 0.6);
+    songs[i] = wav(buf);
+    if (i === 0 && wanted && !muted && !document.hidden) playMusic();
+  };
   setTimeout(async () => {
     try {
+      await recordSong(0);
       for (const [name, [len, draw]] of Object.entries(EFFECTS)) {
         fxBuf[name] = await render(len, 44100, draw, 0.85);
         fxUrl[name] = wav(fxBuf[name]);
       }
-      const { ev, length } = songEvents();
-      const buf = await render(length, 24000, (c, o) => {
-        for (const e of ev) {
-          if (e.bell) noise(c, o, e.at, { gain: 0.05, dur: 0.05, hp: 7500 });
-          else tine(c, o, e.f, e.at, e);
-        }
-      }, 0.6);
-      musicUrl = wav(buf);
-      if (wanted && !muted && !document.hidden) playMusic();
+      for (let i = 1; i < SONGS.length; i++) await recordSong(i);
     } catch (e) { console.warn('sound', e); }
-  }, 300);
+  }, 50);
 
   function playMusic() {
-    const src = musicUrl || quiet; // until the music is ready, silence keeps the element awake
-    if (music.src !== src) {
-      music.src = src;
-      music.loop = !!musicUrl;
-    }
+    const src = songs[song] || quiet; // until the music is ready, silence keeps the element awake
+    if (music.src !== src) music.src = src;
     const p = music.play();
     if (p && p.catch) p.catch(() => {});
   }
+  music.addEventListener('ended', () => {
+    if (music.src === quiet) return;
+    do song = (song + 1) % SONGS.length; while (!songs[song]);
+    if (wanted && !muted && !document.hidden) playMusic();
+  });
 
   // Sound may only start from a tap. Inside each tap until it all works: wake the audio element, and the Web Audio
   // context with a silent sound, which is what iOS asks for.
@@ -245,7 +256,7 @@ export function createSound({ storageKey }) {
         s.start(0);
       }
     } catch (e) { /* ignore */ }
-    if (musicUrl && !music.paused && ctx && ctx.state === 'running') for (const e of EVENTS) removeEventListener(e, unlock, true);
+    if (songs[0] && !music.paused && ctx && ctx.state === 'running') for (const e of EVENTS) removeEventListener(e, unlock, true);
   }
   const EVENTS = ['touchend', 'click', 'pointerup', 'keydown'];
   for (const e of EVENTS) addEventListener(e, unlock, true);
@@ -283,6 +294,6 @@ export function createSound({ storageKey }) {
   return {
     setMuted, get muted() { return muted; },
     open: () => fx('open'), reveal: () => fx('reveal'), close: () => fx('close'), locked: () => fx('locked'),
-    get ready() { return !!musicUrl; }, get playing() { return !music.paused && music.src === musicUrl; },
+    get ready() { return !!songs[0]; }, get playing() { return !music.paused && music.src !== quiet; },
   };
 }

@@ -6,7 +6,8 @@ https://laippari.github.io/laura/
 
 ## Miten se toimii
 
-1. **Aloitus** – lyhyt lataus (sykkivä sydän), sitten valokuvat liukuvat isoina näkymän läpi ja asettuvat reunoille
+1. **Aloitus** – sykkivä sydän ja *Napauta sydäntä, kulta*: napautus käynnistää musiikin (selain sallii äänen vasta
+   napautuksesta), sitten valokuvat liukuvat isoina näkymän läpi ja asettuvat reunoille
    otsikon *Laura ❤️ Ville* ympärille. Napista *Siirry kalenteriin* kuvat lentävät pois ja palaavat samaan sommitelmaan
    eri paikkoihin, ja kaappi laskeutuu keskelle. Napautus kuvien aikana hyppää suoraan otsikkoon.
 2. **Kalenteri** – kamera näyttää koko kaapin ja liukuu sitten päivän luukulle, jonka alla lukee *Avaa tästä*.
@@ -16,7 +17,8 @@ https://laippari.github.io/laura/
    ja alle tulee otsikko ja viesti. *Sulje luukku* palauttaa koko kalenteriin.
 4. Avatut luukut jäävät raolleen ja niihin voi palata. Tulevan päivän luukku vain kolahtaa, ja kaapin alle tulee *Malta vielä hetki, murunen 😘* (neljä versiota vuorotellen, `tooEarly` tiedostossa `src/content.js`).
 
-**Ääni:** soittorasia soittaa taustalla Kulkusia, We Wish You a Merry Christmasia ja Jouluyö, juhlayötä silmukassa,
+**Ääni:** soittorasia soittaa taustalla vuorotellen Deck the Hallsia, Kulkusia, We Wish You a Merry Christmasia ja
+Jouluyö, juhlayötä,
 ja luukuilla on omat äänensä (avaus, sisällön paljastus, sulkeminen, liian aikainen napautus). Äänet syntetisoidaan
 selaimessa ja nauhoitetaan latauksen jälkeen WAV-muotoon (`src/sound.js`). Musiikki soi audio-elementillä, joka soi
 iPhonessa myös äänettömällä. Selain sallii äänen vasta ensimmäisestä kosketuksesta, joten musiikki alkaa siitä.

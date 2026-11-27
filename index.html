@@ -60,9 +60,18 @@
       transition: opacity 0.9s ease, visibility 0s 0.9s; pointer-events: none;
     }
     body.ready #loading { opacity: 0; visibility: hidden; }
-    #loading div { position: relative; width: 96px; height: 96px; display: grid; place-items: center; font-size: 40px; }
-    #loading span { animation: beat 1s ease-in-out infinite; }
-    #loading div::before {
+    body.tap #loading { pointer-events: auto; cursor: pointer; }
+    #loading > div { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+    #loading p {
+      margin: 0; color: var(--cream); font: 500 20px/1.2 var(--round); opacity: 0; transform: translateY(8px);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    body.tap #loading p { opacity: 0.9; transform: none; }
+    body.tap #loading span { font-size: 64px; }
+    body.tap #loading div div::before { opacity: 0; transition: opacity 0.5s; }
+    #loading div div { position: relative; width: 96px; height: 96px; display: grid; place-items: center; font-size: 40px; }
+    #loading span { animation: beat 1s ease-in-out infinite; transition: font-size 0.5s var(--ease); }
+    #loading div div::before {
       content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(220, 182, 112, 0.2);
       border-top-color: var(--gold); animation: turn 1.1s linear infinite;
     }
@@ -178,7 +187,7 @@
     <button class="btn" id="close" type="button"></button>
   </section>
 
-  <div id="loading"><div><span>❤️</span></div></div>
+  <div id="loading"><div><div><span>❤️</span></div><p id="tap-text"></p></div></div>
   <div id="fail" hidden></div>
   <script type="module" src="src/main.js"></script>
 </body>
