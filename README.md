@@ -16,12 +16,14 @@ https://laippari.github.io/laura/
 4. Avatut luukut jäävät raolleen ja niihin voi palata. Tulevan päivän luukku vain kolahtaa, ja kaapin alle tulee *Malta vielä hetki, murunen 😘* (neljä versiota vuorotellen, `tooEarly` tiedostossa `src/content.js`).
 
 **Ääni:** soittorasia soittaa taustalla Kulkusia, We Wish You a Merry Christmasia ja Jouluyö, juhlayötä silmukassa,
-ja luukuilla on omat äänensä (avaus, sisällön paljastus, sulkeminen, liian aikainen napautus). Kaikki syntetisoidaan
-selaimessa (`src/sound.js`), joten äänitiedostoja ei ole. Selain sallii äänen vasta ensimmäisestä kosketuksesta, joten
-musiikki alkaa siitä. Oikean yläkulman nuottinappi mykistää, ja valinta muistetaan.
+ja luukuilla on omat äänensä (avaus, sisällön paljastus, sulkeminen, liian aikainen napautus). Äänet syntetisoidaan
+selaimessa ja nauhoitetaan latauksen jälkeen WAV-muotoon (`src/sound.js`). Musiikki soi audio-elementillä, joka soi
+iPhonessa myös äänettömällä. Selain sallii äänen vasta ensimmäisestä kosketuksesta, joten musiikki alkaa siitä.
+Oikean yläkulman nuottinappi mykistää, ja valinta muistetaan.
 
-**Koko näyttö:** neuletausta jatkuu puhelimen kameran ja selaimen osoitekentän taakse (`viewport-fit=cover`,
-`100lvh`); tekstit ja napit pysyvät turva-alueen sisällä. Androidilla osoitepalkki värjätään punaiseksi (`theme-color`).
+**Koko näyttö:** puhelimen selain näyttää osoitekentän ja kameran alla sivun oman taustan, joten sivun taustana on
+sama neulekuvio samassa mittakaavassa ja kohdassa kuin 3D-seinä (`pageBackground` tiedostossa `src/main.js`).
+Androidilla osoitepalkki värjätään punaiseksi (`theme-color`).
 
 Luukut aukeavat laitteen kellon mukaan 1.–24.12.2026; sen jälkeen kaikki pysyvät auki. Avatut luukut muistetaan
 selaimessa (`localStorage`), eli muisti on laitekohtainen.

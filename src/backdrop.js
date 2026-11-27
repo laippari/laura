@@ -70,5 +70,5 @@ export function buildBackdrop(scene, tex, { phone }) {
     }
     geo.attributes.position.needsUpdate = true;
   }
-  return { update, setShadow: (k) => { shadow.material.opacity = 0.7 * k; } };
+  return { update, setShadow: (k) => { shadow.material.opacity = 0.7 * k; }, tile: { w: tileW, h: tileH, z: Z } };
 }

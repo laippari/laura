@@ -82,6 +82,18 @@ scene.environmentIntensity = 0.42;
 
 const tex = makeTextures({ phone, numberFont });
 const backdrop = buildBackdrop(scene, tex, { phone });
+
+// The page's own background is the same knitted wall, at the same scale and in the same place as in the scene:
+// phone browsers show the page background under their bars (the address bar, the camera) where the scene is not drawn.
+const root = document.documentElement.style;
+try { root.backgroundImage = `url(${tex.knit.image.toDataURL('image/png')})`; } catch (e) { /* the red colour stays */ }
+function pageBackground() {
+  const p = poseOverview(), ppu = view2d.h / (2 * (p.pos.z - backdrop.tile.z) * TAN);
+  const bw = backdrop.tile.w * ppu, bh = backdrop.tile.h * ppu;
+  root.backgroundSize = `${bw}px ${bh}px`;
+  // the middle of the view shows the tile at (0.5, 0.2 from its bottom), as the wall's texture offset puts it
+  root.backgroundPosition = `${view2d.w / 2 - 0.5 * bw}px ${view2d.h / 2 - 0.8 * bh}px`;
+}
 const cal = buildCalendar(tex);
 const cabinet = cal.group;
 scene.add(cabinet);
@@ -253,6 +265,7 @@ function resize() {
     const p = poseOverview(), hh = (p.pos.z + 1.5) * TAN;
     photos.layout({ tall: portrait(), hw: hh * camera.aspect, hh, cy: p.target.y });
   }
+  pageBackground();
 }
 addEventListener('resize', resize);
 if (window.visualViewport) visualViewport.addEventListener('resize', resize);
