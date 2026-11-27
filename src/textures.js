@@ -124,7 +124,7 @@ function auraTexture(frac) {
 // Kuvio on silmukkaruudukko, joka toistuu saumatta: punainen raita sydämillä, siksak-reuna, roosa raita
 // karkkikepeillä, siksak-reuna. Jokainen ruutu piirretään neulesilmukkana (V).
 export const KNIT = { cols: 24, rows: 43, sw: 14, sh: 11 };
-const YARN = [[110, 10, 24], [178, 84, 94], [210, 128, 130], [236, 221, 203], [140, 14, 30]]; // red, rose, heart, cream, cane red
+const YARN = [[158, 12, 30], [222, 96, 112], [244, 150, 156], [246, 232, 216], [184, 14, 34]]; // red, rose, heart, cream, cane red
 
 function knitPattern() {
   const { cols: W, rows: H } = KNIT, g = Array.from({ length: H }, () => new Array(W).fill(0));
@@ -161,7 +161,7 @@ function knitTexture() {
   const yarn = (v, k) => `rgb(${YARN[v].map((q) => Math.round(Math.min(255, q * k))).join(',')})`;
   // the shadow between the stitches
   for (let r = 0; r < H; r++) for (let q = 0; q < W; q++) {
-    ctx.fillStyle = yarn(grid[r][q], 0.5);
+    ctx.fillStyle = yarn(grid[r][q], 0.58);
     ctx.fillRect(q * sw, r * sh, sw, sh);
   }
   ctx.lineCap = 'round';
@@ -215,7 +215,7 @@ export function makeTextures({ phone, numberFont }) {
     numbers: numberAtlas(numberFont),
     knit: knitTexture(),
     wallShadow: shadowTexture(),
-    vignette: radialTexture([[0, 'rgba(10,2,4,0.34)'], [0.22, 'rgba(10,2,4,0.46)'], [0.5, 'rgba(9,2,4,0.8)'], [0.8, 'rgba(8,3,5,0.97)'], [1, 'rgba(8,3,5,1)']], 256),
+    vignette: radialTexture([[0, 'rgba(14,2,5,0.12)'], [0.25, 'rgba(14,2,5,0.24)'], [0.55, 'rgba(11,2,5,0.62)'], [0.85, 'rgba(8,3,5,0.94)'], [1, 'rgba(8,3,5,1)']], 256),
     aura: auraTexture(0.6),
     soft: radialTexture([[0, 'rgba(255,255,255,1)'], [0.35, 'rgba(255,255,255,0.55)'], [1, 'rgba(255,255,255,0)']]),
     nicheGlow: radialTexture([[0, '#fff0cf'], [0.45, '#f0a956'], [1, '#6b2f10']], 256),

@@ -12,7 +12,7 @@ export function buildBackdrop(scene, tex, { phone }) {
   tex.knit.repeat.set(WALL / tileW, WALL / tileH);
   tex.knit.offset.set(0.5 - WALL / tileW / 2, 0.2 - WALL / tileH / 2);
   const flat = (map, extra) => new THREE.MeshBasicMaterial({ map, toneMapped: false, depthWrite: false, ...extra });
-  const wall = new THREE.Mesh(new THREE.PlaneGeometry(WALL, WALL), flat(tex.knit, { color: '#d2c4c2' }));
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(WALL, WALL), flat(tex.knit, { color: '#f2e9e7' }));
   wall.position.z = Z;
   wall.renderOrder = -30;
   const shadow = new THREE.Mesh(new THREE.PlaneGeometry(12.5, 15.6), flat(tex.wallShadow, { transparent: true, opacity: 0.8 }));
