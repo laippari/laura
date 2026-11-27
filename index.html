@@ -32,14 +32,13 @@
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
     /* the knitted red behind everything, so the strips under the browser's bars and the camera match the wall */
-    html { background: #a3112b; }
+    html { background: #a3112b repeat; }
     html, body {
-      margin: 0; height: 100%; background: var(--bg); overflow: hidden; overscroll-behavior: none;
+      margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none;
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
     }
     body { font: 400 16px/1.5 var(--sans); color: var(--cream); }
-    /* the canvas fills the large viewport: under the address bar and up behind the camera */
-    canvas#c { position: fixed; left: 0; top: 0; width: 100%; height: 100%; height: 100lvh; display: block; touch-action: none; outline: none; }
+    canvas#c { position: fixed; left: 0; top: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
     button { font: inherit; color: inherit; cursor: pointer; }
 
     .btn {
@@ -57,7 +56,7 @@
 
     /* a short loading moment: a beating heart, until the scene is ready and she has had time to look */
     #loading {
-      position: fixed; left: 0; top: 0; width: 100%; height: 100lvh; z-index: 20; display: grid; place-items: center; background: var(--bg);
+      position: fixed; inset: -200px 0; z-index: 20; display: grid; place-items: center; background: var(--bg);
       transition: opacity 0.9s ease, visibility 0s 0.9s; pointer-events: none;
     }
     body.ready #loading { opacity: 0; visibility: hidden; }
