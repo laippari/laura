@@ -120,30 +120,83 @@ function auraTexture(frac) {
   return t;
 }
 
-function backgroundTexture() {
-  const W = 512, H = 1024, c = document.createElement('canvas');
-  c.width = W;
-  c.height = H;
+// ---------- neulottu tausta ----------
+// Kuvio on silmukkaruudukko, joka toistuu saumatta: punainen raita sydämillä, siksak-reuna, roosa raita
+// karkkikepeillä, siksak-reuna. Jokainen ruutu piirretään neulesilmukkana (V).
+export const KNIT = { cols: 24, rows: 43, sw: 14, sh: 11 };
+const YARN = [[110, 10, 24], [178, 84, 94], [210, 128, 130], [236, 221, 203], [140, 14, 30]]; // red, rose, heart, cream, cane red
+
+function knitPattern() {
+  const { cols: W, rows: H } = KNIT, g = Array.from({ length: H }, () => new Array(W).fill(0));
+  const put = (x, y, v) => { g[((y % H) + H) % H][((x % W) + W) % W] = v; };
+  const HEART = ['.XX...XX.', 'XXXX.XXXX', 'XXXXXXXXX', 'XXXXXXXXX', '.XXXXXXX.', '..XXXXX..', '...XXX...', '....X....'];
+  const heart = (x0, y0) => HEART.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === 'X') put(x0 + i, y0 + j, 2); }));
+  const zigzag = (y0) => { for (let x = 0; x < W; x++) put(x, y0 + [2, 1, 0, 1][x % 4], 3); };
+
+  // rows 0–18: red, two staggered rows of hearts
+  for (const x of [1, 13]) heart(x, 2);
+  for (const x of [7, 19]) heart(x, 9);
+  zigzag(19);
+  // rows 22–39: rose, candy canes leaning towards each other
+  for (let y = 22; y < 40; y++) for (let x = 0; x < W; x++) put(x, y, 1);
+  const CANE = [
+    '..WWW....', '.RR..RR..', '.WW..WW..', '.RR..RR..', '.WW......', '..RR.....', '..WW.....',
+    '...RR....', '...WW....', '....RR...', '....WW...', '.....RR..', '.....WW..', '......RR.',
+  ];
+  const cane = (x0, mirror) => CANE.forEach((row, j) => [...row].forEach((ch, i) => {
+    if (ch !== '.') put(x0 + (mirror ? 8 - i : i), 24 + j, ch === 'W' ? 3 : 4);
+  }));
+  cane(1, false);
+  cane(14, true);
+  zigzag(40);
+  return g;
+}
+
+function knitTexture() {
+  const { cols: W, rows: H, sw, sh } = KNIT, grid = knitPattern(), rnd = rng(41);
+  const c = document.createElement('canvas');
+  c.width = W * sw;
+  c.height = H * sh;
   const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#0a1622');
-  g.addColorStop(0.55, '#0c1a24');
-  g.addColorStop(1, '#060b10');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-  const r = ctx.createRadialGradient(W / 2, H * 0.46, 0, W / 2, H * 0.46, H * 0.62);
-  r.addColorStop(0, 'rgba(58,84,104,0.55)');
-  r.addColorStop(0.5, 'rgba(30,48,64,0.25)');
-  r.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = r;
-  ctx.fillRect(0, 0, W, H);
-  // a little grain against banding
-  const img = ctx.getImageData(0, 0, W, H), d = img.data, rnd = rng(5);
+  const yarn = (v, k) => `rgb(${YARN[v].map((q) => Math.round(Math.min(255, q * k))).join(',')})`;
+  // the shadow between the stitches
+  for (let r = 0; r < H; r++) for (let q = 0; q < W; q++) {
+    ctx.fillStyle = yarn(grid[r][q], 0.5);
+    ctx.fillRect(q * sw, r * sh, sw, sh);
+  }
+  ctx.lineCap = 'round';
+  ctx.lineWidth = sw * 0.34;
+  const leg = (x0, y0, x1, y1, col) => { ctx.strokeStyle = col; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); };
+  // each row laps over the one above, as in real knitting; one extra row at each end so the sheet repeats
+  for (let r = -1; r <= H; r++) for (let q = 0; q < W; q++) {
+    const v = grid[(r + H) % H][q], x = q * sw, y = r * sh, j = 0.93 + rnd() * 0.14;
+    leg(x + sw * 0.2, y - sh * 0.08, x + sw * 0.5, y + sh * 1.04, yarn(v, j * 1.05));
+    leg(x + sw * 0.8, y - sh * 0.08, x + sw * 0.5, y + sh * 1.04, yarn(v, j * 0.88));
+  }
+  // yarn fuzz
+  const img = ctx.getImageData(0, 0, c.width, c.height), d = img.data;
   for (let i = 0; i < d.length; i += 4) {
-    const n = (rnd() - 0.5) * 5;
+    const n = (rnd() - 0.5) * 16;
     d[i] += n; d[i + 1] += n; d[i + 2] += n;
   }
   ctx.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 8;
+  return t;
+}
+
+// The cabinet's soft shadow on the wall behind it.
+function shadowTexture() {
+  const c = document.createElement('canvas');
+  c.width = 256;
+  c.height = 320;
+  const ctx = c.getContext('2d');
+  ctx.shadowColor = 'rgba(0,0,0,0.9)';
+  ctx.shadowBlur = 44;
+  ctx.shadowOffsetX = 600;
+  ctx.fillRect(-600 + 68, 70, 120, 180);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -160,7 +213,9 @@ export function makeTextures({ phone, numberFont }) {
   return {
     oak, walnut, oakBump, walnutBump,
     numbers: numberAtlas(numberFont),
-    background: backgroundTexture(),
+    knit: knitTexture(),
+    wallShadow: shadowTexture(),
+    vignette: radialTexture([[0, 'rgba(10,2,4,0.34)'], [0.22, 'rgba(10,2,4,0.46)'], [0.5, 'rgba(9,2,4,0.8)'], [0.8, 'rgba(8,3,5,0.97)'], [1, 'rgba(8,3,5,1)']], 256),
     aura: auraTexture(0.6),
     soft: radialTexture([[0, 'rgba(255,255,255,1)'], [0.35, 'rgba(255,255,255,0.55)'], [1, 'rgba(255,255,255,0)']]),
     nicheGlow: radialTexture([[0, '#fff0cf'], [0.45, '#f0a956'], [1, '#6b2f10']], 256),

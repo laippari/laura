@@ -59,8 +59,8 @@ Samat toimivat julkaistulla sivulla, esim. `https://laippari.github.io/laura/?pa
 | `src/main.js` | Näkymä, kamera, tilakone ja käyttöliittymä. |
 | `src/calendar.js` | Kaappi ja luukut. `LAYOUT` määrää, missä lokerossa mikin päivä on. |
 | `src/items.js` | Luukkujen 3D-esineet. |
-| `src/textures.js` | Proseduraaliset tekstuurit (puu, numerot, hehkut). |
-| `src/backdrop.js` | Tausta: lumisade ja kaukaiset valot. |
+| `src/textures.js` | Proseduraaliset tekstuurit (puu, numerot, hehkut, taustan neulekuvio silmukka kerrallaan). |
+| `src/backdrop.js` | Tausta: neulottu jouluseinä kaapin takana, lumisade ja pehmeät valot. |
 | `assets/` | Kuvat (`photo`-luukut). |
 
 three.js ladataan jsDelivr-CDN:stä (`three@0.186.1`, lukittu versio). Käännösvaihetta ei ole.
