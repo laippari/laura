@@ -1,29 +1,46 @@
-// Tausta: talvi-illan sininen, lumisade ja kaukaiset lämpimät valot.
+// Tausta: neulottu jouluseinä kaapin takana, sen edessä lumisade ja pehmeät lämpimät valot.
 import * as THREE from 'three';
-import { rng } from './textures.js';
+import { rng, KNIT } from './textures.js';
 
 export function buildBackdrop(scene, tex, { phone }) {
-  scene.background = tex.background;
+  scene.background = new THREE.Color('#080305');
   const rnd = rng(77);
 
-  // distant lights, out of focus
+  // the knitted wall: well behind the cabinet and dim, brightest behind it and fading into the dark
+  const WALL = 52, Z = -4.5, STITCH = 0.085;
+  const tileW = KNIT.cols * STITCH, tileH = KNIT.rows * STITCH * (KNIT.sh / KNIT.sw);
+  tex.knit.repeat.set(WALL / tileW, WALL / tileH);
+  tex.knit.offset.set(0.5 - WALL / tileW / 2, 0.2 - WALL / tileH / 2);
+  const flat = (map, extra) => new THREE.MeshBasicMaterial({ map, toneMapped: false, depthWrite: false, ...extra });
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(WALL, WALL), flat(tex.knit, { color: '#d2c4c2' }));
+  wall.position.z = Z;
+  wall.renderOrder = -30;
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(12.5, 15.6), flat(tex.wallShadow, { transparent: true, opacity: 0.8 }));
+  shadow.position.set(0.8, -1.0, Z + 0.01);
+  shadow.renderOrder = -29;
+  const vignette = new THREE.Mesh(new THREE.PlaneGeometry(WALL, WALL), flat(tex.vignette, { transparent: true }));
+  vignette.position.z = Z + 0.02;
+  vignette.renderOrder = -28;
+  scene.add(wall, shadow, vignette);
+
+  // soft lights floating between the wall and the cabinet
   const lights = [];
   const palette = ['#ffc98a', '#ffb060', '#ffe2b8', '#ff9a6a', '#ffd9a0'];
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 16; i++) {
     const mat = new THREE.SpriteMaterial({
       map: tex.soft, color: palette[i % palette.length], transparent: true, depthWrite: false,
       blending: THREE.AdditiveBlending, opacity: 0.1,
     });
     const s = new THREE.Sprite(mat);
-    s.position.set((rnd() - 0.5) * 34, (rnd() - 0.5) * 26, -9 - rnd() * 9);
-    const size = 1.1 + rnd() * 2.6;
+    s.position.set((rnd() - 0.5) * 22, (rnd() - 0.5) * 18, -4 + rnd() * 2.6);
+    const size = 0.7 + rnd() * 1.5;
     s.scale.set(size, size, 1);
     scene.add(s);
-    lights.push({ s, base: 0.08 + rnd() * 0.2, f: 0.3 + rnd() * 0.7, p: rnd() * 6.28, x: s.position.x, y: s.position.y });
+    lights.push({ s, base: 0.06 + rnd() * 0.12, f: 0.3 + rnd() * 0.7, p: rnd() * 6.28, x: s.position.x, y: s.position.y });
   }
 
   // snow
-  const N = phone ? 220 : 360, box = { x: 22, y: 20, z0: -9, z1: 7 };
+  const N = phone ? 220 : 360, box = { x: 22, y: 20, z0: -4.2, z1: 7 };
   const pos = new Float32Array(N * 3), meta = [];
   for (let i = 0; i < N; i++) {
     pos[i * 3] = (rnd() - 0.5) * box.x;
