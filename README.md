@@ -21,7 +21,7 @@ selaimessa (`localStorage`), eli muisti on laitekohtainen.
 Kaikki tekstit ja luukkujen sisältö ovat tiedostossa **`src/content.js`**:
 
 ```js
-5: { item: 'photo', title: 'Muistatko tämän?', text: 'Se ilta Löylyssä.', image: 'assets/loyly.jpg' },
+5: { item: 'photo', title: 'Otsikko', text: 'Viesti tähän.', image: 'assets/kuva.jpg' },
 ```
 
 | Kenttä | Sisältö |
