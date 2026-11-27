@@ -1,0 +1,8 @@
+# Työtapa
+
+- **Julkaise muutokset automaattisesti.** Kun muutos on tehty ja tarkistettu selaimessa, vie se `main`-haaraan
+  (pull request + merge) kysymättä erikseen. `main`-haaran push julkaisee sivun GitHub Pagesiin.
+- Varmista julkaisun jälkeen, että https://laippari.github.io/laura/ vastaa. Jos julkaisuajo kaatuu vaiheessa
+  `deploy-pages` ("No artifacts named github-pages"), käynnistä workflow uudelleen uutena ajona
+  (`workflow_dispatch`), älä saman ajon uusintana.
+- Sisältö (tekstit, luukut) on tiedostossa `src/content.js`. Esikatselu: `?paiva=5`, muistin nollaus: `?nollaa`.
