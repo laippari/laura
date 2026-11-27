@@ -92,7 +92,7 @@ function pageBackground() {
   const bw = backdrop.tile.w * ppu, bh = backdrop.tile.h * ppu;
   root.backgroundSize = `${bw}px ${bh}px`;
   // the middle of the view shows the tile at (0.5, 0.2 from its bottom), as the wall's texture offset puts it
-  root.backgroundPosition = `${view2d.w / 2 - 0.5 * bw}px ${view2d.h / 2 - 0.8 * bh}px`;
+  root.backgroundPosition = `${view2d.w / 2 - 0.5 * bw}px ${view2d.top + view2d.h / 2 - 0.8 * bh}px`;
 }
 const cal = buildCalendar(tex);
 const cabinet = cal.group;
@@ -251,11 +251,18 @@ function moveCamera(to, sec) {
   }).then(() => { cameraMoving--; });
 }
 
-const view2d = { w: innerWidth, h: innerHeight }; // the canvas in CSS pixels; it can reach under the browser's bars
+const view2d = { w: innerWidth, h: innerHeight, top: 0 }; // the canvas in CSS pixels; it can reach under the browser's bars
 function resize() {
-  const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
+  // the canvas covers exactly the part of the screen the browser shows (not what is under its bars), so that the
+  // cabinet sits in the middle of what she sees
+  const vv = window.visualViewport, top = vv ? Math.max(0, vv.offsetTop) : 0;
+  const w = vv ? Math.round(vv.width) : innerWidth, h = vv ? Math.round(vv.height) : innerHeight;
+  canvas.style.top = top + 'px';
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
   view2d.w = w;
   view2d.h = h;
+  view2d.top = top;
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
@@ -292,39 +299,21 @@ function refreshDoors() {
 }
 
 const ui = {
-  status: $('status'), statusText: $('status').querySelector('span'), statusBtn: $('status').querySelector('button'),
   hint: $('hint'), tease: $('tease'), card: $('card'),
 };
-let statusAction = null;
-function updateStatus() {
-  let text = '', btn = '';
-  statusAction = null;
-  if (view !== 'overview') {
-    btn = TEXTS.wholeCalendar;
-    statusAction = () => goOverview();
-  } else if (now.unlocked === 0) {
-    text = TEXTS.statusBefore + ' ' + (now.nights === 1 ? TEXTS.statusBeforeNights.one : fill(TEXTS.statusBeforeNights.many, now.nights));
-  } else {
-    const t = todayDoor(), left = cal.doors.filter((d) => d.available && !d.opened).length;
-    if (t && !t.opened) {
-      text = TEXTS.statusToday;
-      btn = fill(TEXTS.statusTodayAction, t.day);
-      statusAction = () => openDoor(t);
-    } else if (left) text = left === 1 ? TEXTS.statusUnopened.one : fill(TEXTS.statusUnopened.many, left);
-    else text = now.today ? TEXTS.statusDone : TEXTS.statusAfter;
-  }
-  ui.statusText.textContent = text;
-  ui.statusBtn.textContent = btn;
-  ui.statusBtn.hidden = !btn;
-  ui.status.classList.toggle('on', mode === 'calendar');
-  document.body.classList.toggle('near', view !== 'overview');
+// What the calendar has to say right now; shown in the bubble under the cabinet when she taps beside it.
+function statusText() {
+  if (now.unlocked === 0) return TEXTS.statusBefore + ' ' + (now.nights === 1 ? TEXTS.statusBeforeNights.one : fill(TEXTS.statusBeforeNights.many, now.nights));
+  const t = todayDoor(), left = cal.doors.filter((d) => d.available && !d.opened).length;
+  if (t && !t.opened) return TEXTS.statusToday;
+  if (left) return left === 1 ? TEXTS.statusUnopened.one : fill(TEXTS.statusUnopened.many, left);
+  return now.today ? TEXTS.statusDone : TEXTS.statusAfter;
 }
-ui.statusBtn.addEventListener('click', () => { if (mode === 'calendar' && statusAction) statusAction(); });
 
 // a playful line under the cabinet when a door is tried too early
 let teaseTimer = 0, teaseN = 0;
-function tease() {
-  ui.tease.textContent = TEXTS.tooEarly[teaseN++ % TEXTS.tooEarly.length];
+function tease(text = TEXTS.tooEarly[teaseN++ % TEXTS.tooEarly.length]) {
+  ui.tease.textContent = text;
   ui.tease.classList.remove('on');
   void ui.tease.offsetWidth; // restart the pop-in
   ui.tease.classList.add('on');
@@ -358,23 +347,19 @@ async function enter() {
     await moveCamera(t, 1.4);
   }
   mode = 'calendar';
-  updateStatus();
 }
 
 async function goOverview() {
   if (mode !== 'calendar' || view === 'overview') return;
   mode = 'busy';
-  ui.status.classList.remove('on');
   await moveCamera('overview', 1.2);
   mode = 'calendar';
-  updateStatus();
 }
 
 async function openDoor(d) {
   if (mode !== 'calendar' || !d.available) return;
   mode = 'busy';
   active = d;
-  ui.status.classList.remove('on');
   if (view !== d) await moveCamera(d, view === 'overview' ? 1.25 : 0.8);
   d.target = OPEN_ANGLE;
   sound.open();
@@ -413,7 +398,6 @@ async function closeDoor() {
   tween(0.8, (k) => { cal.nicheLight.intensity = 2.4 * (1 - k); });
   await moveCamera('overview', 1.35);
   mode = 'calendar';
-  updateStatus();
 }
 
 function tryLocked(d) {
@@ -426,7 +410,7 @@ function tryLocked(d) {
 
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), inv = new THREE.Matrix4(), hit = new THREE.Vector3();
 function doorAt(x, y) {
-  ndc.set((x / view2d.w) * 2 - 1, -(y / view2d.h) * 2 + 1);
+  ndc.set((x / view2d.w) * 2 - 1, -((y - view2d.top) / view2d.h) * 2 + 1);
   ray.setFromCamera(ndc, camera);
   ray.ray.applyMatrix4(inv.copy(cabinet.matrixWorld).invert());
   const o = ray.ray.origin, dir = ray.ray.direction;
@@ -471,7 +455,7 @@ const release = (e) => {
   drag.yawTo = drag.pitchTo = 0;
   if (!tap || mode !== 'calendar') return;
   const d = doorAt(e.clientX, e.clientY);
-  if (!d) goOverview();
+  if (!d) { if (view === 'overview') tease(statusText()); else goOverview(); }
   else if (d.available) openDoor(d);
   else tryLocked(d);
 };
@@ -494,13 +478,12 @@ addEventListener('keydown', (e) => {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || mode === 'busy' || mode === 'reveal') return;
   const next = calendarState();
-  if (next.unlocked !== now.unlocked) { now = next; refreshDoors(); updateStatus(); }
+  if (next.unlocked !== now.unlocked) { now = next; refreshDoors(); }
 });
 
 // ---------- tekstit ----------
 
 document.title = TEXTS.pageTitle;
-$('top').textContent = TEXTS.pageTitle;
 $('intro-eyebrow').textContent = TEXTS.introEyebrow;
 $('intro-title').textContent = TEXTS.introTitle;
 $('intro-text').textContent = TEXTS.introText;
@@ -552,7 +535,7 @@ function frame(ms) {
   cabinet.rotation.x = (Math.sin(t * 0.63 + 1) * 0.04 + Math.sin(t * 1.21) * 0.014) * sway + drag.pitch;
   cabinet.rotation.z = Math.sin(t * 0.52 + 2) * 0.018 * sway;
   cabinet.position.y = Math.sin(t * 1.05) * 0.1 * sway + away * 14;
-  cabinet.position.x = Math.sin(t * 0.47 + 0.8) * 0.05 * sway;
+  cabinet.position.x = -Math.sin(cabinet.rotation.y) * GRID.front;
   cal.update(dt, t);
 
   camera.position.copy(camPos);
@@ -565,13 +548,13 @@ function frame(ms) {
   ui.hint.classList.toggle('on', invite);
   if (invite) {
     anchor.set(td.cx, td.cy - GRID.opening / 2 - 0.06, GRID.front).applyMatrix4(cabinet.matrixWorld).project(camera);
-    ui.hint.style.transform = `translate(${((anchor.x + 1) / 2) * view2d.w}px, ${((1 - anchor.y) / 2) * view2d.h + 8}px)`;
+    ui.hint.style.transform = `translate(${((anchor.x + 1) / 2) * view2d.w}px, ${view2d.top + ((1 - anchor.y) / 2) * view2d.h + 8}px)`;
   }
 
   // the playful line stays just under the cabinet, clear of the status line
   if (ui.tease.classList.contains('on')) {
     anchor.set(0, -GRID.height / 2 - 0.12, GRID.front).applyMatrix4(cabinet.matrixWorld).project(camera);
-    const y = Math.min(((1 - anchor.y) / 2) * view2d.h + 10, innerHeight - 150);
+    const y = Math.min(view2d.top + ((1 - anchor.y) / 2) * view2d.h + 10, view2d.top + view2d.h - 80);
     ui.tease.style.top = y + 'px';
   }
 
