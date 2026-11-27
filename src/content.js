@@ -16,10 +16,11 @@ export const SETTINGS = {
 export const TEXTS = {
   pageTitle: 'Lauran joulukalenteri',
   introEyebrow: 'Joulukuu 2026',
-  introTitle: 'Tervetuloa, Laura',
-  introText: 'Tämä on sinun joulukalenterisi. Jokaisena päivänä jouluun asti aukeaa yksi uusi luukku.',
-  introTitleAgain: 'Hei taas, Laura',
-  introTextAgain: 'Kalenterisi odottaa.',
+  introTitle: 'Laura ❤️ Ville',
+  introText: 'Joulukalenteri',
+  // aloitusnapin teksti: ensimmäinen luukku, jokin myöhempi päivän luukku, ei avattavaa juuri nyt
+  enterFirst: 'Avataan eka luukku',
+  enterToday: 'Avataan päivän luukku',
   enter: 'Siirry kalenteriin',
   hint: 'Avaa tästä',
   close: 'Sulje luukku',
@@ -37,6 +38,9 @@ export const TEXTS = {
   wholeCalendar: 'Koko kalenteri',
   noWebGL: 'Kalenteri tarvitsee selaimen, joka osaa piirtää 3D-grafiikkaa. Kokeile toisella selaimella tai laitteella.',
 };
+
+// Paperikuvat, jotka leijailevat alas ennen kalenteria ja jäävät läjään sen alle. Viimeiset jäävät päällimmäisiksi.
+export const PHOTOS = Array.from({ length: 15 }, (_, i) => `assets/kuvat/${String(i + 1).padStart(2, '0')}.jpg`);
 
 // HUOM: alla olevat tekstit ovat paikanpitäjiä, joilla perustoiminta on rakennettu. Korvaa omilla.
 export const DOORS = {

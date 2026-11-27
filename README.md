@@ -6,7 +6,8 @@ https://laippari.github.io/laura/
 
 ## Miten se toimii
 
-1. **Tervetuloa** – kalenteri kääntyilee hitaasti taustalla, nappi *Siirry kalenteriin*.
+1. **Aloitus** – *Laura ❤️ Ville · Joulukalenteri* neuletaustan päällä ja nappi (*Avataan eka luukku*).
+   Napista valokuvat leijailevat ylhäältä alas läjään, ja kaappi laskeutuu niiden eteen.
 2. **Kalenteri** – kamera näyttää koko kaapin ja liukuu sitten päivän luukulle, jonka alla lukee *Avaa tästä*.
    Luukut, jotka saa avata, hehkuvat reunoiltaan. Kaappia voi kallistella vetämällä.
 3. **Luukku** – napautus avaa luukun, sisältö leijuu esiin omaan näkymäänsä (esinettä voi pyörittää vetämällä)
@@ -60,8 +61,9 @@ Samat toimivat julkaistulla sivulla, esim. `https://laippari.github.io/laura/?pa
 | `src/calendar.js` | Kaappi ja luukut. `LAYOUT` määrää, missä lokerossa mikin päivä on. |
 | `src/items.js` | Luukkujen 3D-esineet. |
 | `src/textures.js` | Proseduraaliset tekstuurit (puu, numerot, hehkut, taustan neulekuvio silmukka kerrallaan). |
+| `src/photos.js` | Paperikuvat: putoaminen ja läjä kaapin alla. Kuvat listataan `content.js`:n `PHOTOS`-listassa. |
 | `src/backdrop.js` | Tausta: neulottu jouluseinä kaapin takana, lumisade ja pehmeät valot. |
-| `assets/` | Kuvat (`photo`-luukut). |
+| `assets/` | Kuvat: `assets/kuvat/` paperikuville (neliö, 640 px, ei sijaintitietoja), muut `photo`-luukuille. |
 
 three.js ladataan jsDelivr-CDN:stä (`three@0.186.1`, lukittu versio). Käännösvaihetta ei ole.
 

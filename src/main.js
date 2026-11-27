@@ -1,11 +1,12 @@
 // Joulukalenteri: näkymä, kamera, tilakone (tervetuloa → kalenteri → luukku auki → takaisin) ja käyttöliittymä.
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { SETTINGS, TEXTS, DOORS } from './content.js';
+import { SETTINGS, TEXTS, DOORS, PHOTOS } from './content.js';
 import { makeTextures } from './textures.js';
 import { buildCalendar, doorCenter, GRID, OPEN_ANGLE, AJAR_ANGLE } from './calendar.js';
 import { buildItem } from './items.js';
 import { buildBackdrop } from './backdrop.js';
+import { buildPhotos } from './photos.js';
 
 const $ = (id) => document.getElementById(id);
 const fill = (s, n) => s.replaceAll('{n}', n);
@@ -79,6 +80,9 @@ const backdrop = buildBackdrop(scene, tex, { phone });
 const cal = buildCalendar(tex);
 const cabinet = cal.group;
 scene.add(cabinet);
+cabinet.visible = false; // it arrives after the photos have come down
+backdrop.setShadow(0);
+const photos = buildPhotos(scene, tex, PHOTOS);
 
 // warm key from the upper left, cool fill from the right
 const key = new THREE.DirectionalLight('#ffdcb0', 3.1);
@@ -196,6 +200,7 @@ const stage = (() => {
 const tweens = [];
 const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
 const easeOut = (k) => 1 - Math.pow(1 - k, 3);
+const easeOutSoft = (k) => 1 + 1.9 * Math.pow(k - 1, 3) + 0.9 * Math.pow(k - 1, 2); // settles with a small overshoot
 const easeOutBack = (k) => 1 + 2.4 * Math.pow(k - 1, 3) + 1.4 * Math.pow(k - 1, 2);
 const tween = (sec, step, ease = easeInOut) => new Promise((done) => tweens.push({ t: 0, sec: calm ? sec * 0.6 : sec, step, ease, done }));
 const wait = (sec) => tween(sec, () => {});
@@ -206,14 +211,14 @@ const wide = matchMedia('(min-width: 760px) and (min-aspect-ratio: 1/1)'); // sa
 const portrait = () => !wide.matches;
 
 function poseOverview() {
-  const d = fitDist(GRID.width * 1.36, GRID.height * 1.5); // room around the cabinet for the knitted wall
-  return { pos: new THREE.Vector3(0, 0, GRID.front + d), target: new THREE.Vector3(0, 0, 0) };
+  // room around the cabinet for the knitted wall; on upright screens the cabinet sits higher, above the heap of photos
+  const d = fitDist(GRID.width * 1.36, GRID.height * 1.5), y = portrait() ? -0.95 : 0;
+  return { pos: new THREE.Vector3(0, y, GRID.front + d), target: new THREE.Vector3(0, y, 0) };
 }
 function poseIntro() {
-  // upright screens: the cabinet above the text. Wide screens: the cabinet on the right, the text on the left.
-  const tall = portrait(), d = fitDist(GRID.width * 1.55, GRID.height * (tall ? 2.1 : 1.42));
-  const target = tall ? new THREE.Vector3(0, -GRID.height * 0.3, 0) : new THREE.Vector3(-TAN * d * camera.aspect * 0.42, -0.1, 0);
-  return { pos: new THREE.Vector3(target.x - d * 0.1, target.y - d * 0.07, d), target };
+  const p = poseOverview();
+  p.pos.z *= 1.15;
+  return p;
 }
 function poseFocus(door) {
   const target = doorCenter(door).add(new THREE.Vector3(0, -0.14, 0));
@@ -239,6 +244,7 @@ function resize() {
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   if (!cameraMoving) { const p = poseOf(view); camPos.copy(p.pos); camTarget.copy(p.target); }
+  photos.layout(portrait());
 }
 addEventListener('resize', resize);
 resize();
@@ -303,7 +309,7 @@ function toast(text) {
 
 // ---------- kulku ----------
 
-let introK = 1; // 1: the cabinet turns slowly on show, 0: it faces the viewer
+let away = 1; // 1: the cabinet is still up above the view, 0: it has come down into place
 
 async function enter() {
   if (mode !== 'intro') return;
@@ -312,12 +318,16 @@ async function enter() {
   document.body.classList.add('cal');
   store.seen = true;
   save();
-  tween(2.0, (k) => { introK = 1 - k; });
-  await moveCamera('overview', 2.1);
+  // the photos flutter down first, then the cabinet comes down in front of them
+  photos.drop(timer.getElapsed());
+  moveCamera('overview', 1.8);
+  await wait(photos.duration() - 1.0);
+  cabinet.visible = true;
+  await tween(1.25, (k) => { away = 1 - k; backdrop.setShadow(k); }, easeOutSoft);
   const t = todayDoor();
   if (t && !t.opened) {
-    await wait(0.3);
-    await moveCamera(t, 1.5);
+    await wait(0.25);
+    await moveCamera(t, 1.4);
   }
   mode = 'calendar';
   updateStatus();
@@ -456,9 +466,12 @@ document.addEventListener('visibilitychange', () => {
 document.title = TEXTS.pageTitle;
 $('top').textContent = TEXTS.pageTitle;
 $('intro-eyebrow').textContent = TEXTS.introEyebrow;
-$('intro-title').textContent = store.seen ? TEXTS.introTitleAgain : TEXTS.introTitle;
-$('intro-text').textContent = store.seen ? TEXTS.introTextAgain : TEXTS.introText;
-$('enter').textContent = TEXTS.enter;
+$('intro-title').textContent = TEXTS.introTitle;
+$('intro-text').textContent = TEXTS.introText;
+{
+  const t = now.today && !store.opened.has(now.today) ? now.today : 0;
+  $('enter').textContent = t === 1 ? TEXTS.enterFirst : t ? TEXTS.enterToday : TEXTS.enter;
+}
 $('close').textContent = TEXTS.close;
 ui.hint.querySelector('button').textContent = TEXTS.hint;
 
@@ -488,11 +501,10 @@ function frame(ms) {
   const e = 1 - Math.exp(-dt * (ptr ? 14 : 4));
   drag.yaw += (drag.yawTo - drag.yaw) * e;
   drag.pitch += (drag.pitchTo - drag.pitch) * e;
-  const show = easeInOut(introK);
-  cabinet.rotation.y = (Math.sin(t * 0.8) * 0.1 + Math.sin(t * 1.37 + 0.6) * 0.035) * sway + drag.yaw + show * (0.38 + 0.34 * Math.sin(t * 0.5));
+  cabinet.rotation.y = (Math.sin(t * 0.8) * 0.1 + Math.sin(t * 1.37 + 0.6) * 0.035) * sway + drag.yaw;
   cabinet.rotation.x = (Math.sin(t * 0.63 + 1) * 0.04 + Math.sin(t * 1.21) * 0.014) * sway + drag.pitch;
   cabinet.rotation.z = Math.sin(t * 0.52 + 2) * 0.018 * sway;
-  cabinet.position.y = Math.sin(t * 1.05) * 0.1 * sway;
+  cabinet.position.y = Math.sin(t * 1.05) * 0.1 * sway + away * 14;
   cabinet.position.x = Math.sin(t * 0.47 + 0.8) * 0.05 * sway;
   cal.update(dt, t);
 
@@ -510,6 +522,7 @@ function frame(ms) {
   }
 
   backdrop.update(dt, t);
+  photos.update(dt, t);
   stage.update(dt, t);
 
   renderer.clear();
