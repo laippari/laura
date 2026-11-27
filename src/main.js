@@ -7,6 +7,7 @@ import { buildCalendar, doorCenter, GRID, OPEN_ANGLE, AJAR_ANGLE } from './calen
 import { buildItem } from './items.js';
 import { buildBackdrop } from './backdrop.js';
 import { buildPhotos } from './photos.js';
+import { createSound } from './sound.js';
 
 const $ = (id) => document.getElementById(id);
 const fill = (s, n) => s.replaceAll('{n}', n);
@@ -38,6 +39,10 @@ try {
 function save() {
   try { localStorage.setItem(SETTINGS.storageKey, JSON.stringify({ opened: [...store.opened], seen: store.seen })); } catch (e) { /* ignore */ }
 }
+
+// ---------- ääni ----------
+
+const sound = createSound({ storageKey: SETTINGS.storageKey });
 
 // ---------- käynnistys ----------
 
@@ -234,8 +239,11 @@ function moveCamera(to, sec) {
   }).then(() => { cameraMoving--; });
 }
 
+const view2d = { w: innerWidth, h: innerHeight }; // the canvas in CSS pixels; it can reach under the browser's bars
 function resize() {
-  const w = innerWidth, h = innerHeight;
+  const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
+  view2d.w = w;
+  view2d.h = h;
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
@@ -247,6 +255,7 @@ function resize() {
   }
 }
 addEventListener('resize', resize);
+if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 resize();
 
 // ---------- kalenterin tila ----------
@@ -281,7 +290,7 @@ function updateStatus() {
     btn = TEXTS.wholeCalendar;
     statusAction = () => goOverview();
   } else if (now.unlocked === 0) {
-    text = TEXTS.statusBefore + ' ' + (now.nights === 1 ? TEXTS.statusBeforeNights.one : fill(TEXTS.statusBeforeNights.many, now.nights)) + '.';
+    text = TEXTS.statusBefore + ' ' + (now.nights === 1 ? TEXTS.statusBeforeNights.one : fill(TEXTS.statusBeforeNights.many, now.nights));
   } else {
     const t = todayDoor(), left = cal.doors.filter((d) => d.available && !d.opened).length;
     if (t && !t.opened) {
@@ -355,6 +364,7 @@ async function openDoor(d) {
   ui.status.classList.remove('on');
   if (view !== d) await moveCamera(d, view === 'overview' ? 1.25 : 0.8);
   d.target = OPEN_ANGLE;
+  sound.open();
   d.leakTo = 0;
   d.glowTo = 1;
   d.today = false;
@@ -371,6 +381,7 @@ async function openDoor(d) {
   $('card-title').textContent = c.title || '';
   $('card-text').textContent = c.text || '';
   ui.card.classList.add('on');
+  sound.reveal();
   document.body.classList.add('reveal');
   mode = 'reveal';
 }
@@ -379,6 +390,7 @@ async function closeDoor() {
   if (mode !== 'reveal') return;
   mode = 'busy';
   ui.card.classList.remove('on');
+  sound.close();
   document.body.classList.remove('reveal');
   await tween(0.8, (k) => { stage.fly = 1 - k; });
   await tween(0.22, (k) => { stage.pop = 1 - k; }, easeOut);
@@ -393,6 +405,7 @@ async function closeDoor() {
 
 function tryLocked(d) {
   d.vel += 2.6; // a rattle: the leaf springs out a little and falls back
+  sound.locked();
   tease();
 }
 
@@ -400,7 +413,7 @@ function tryLocked(d) {
 
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), inv = new THREE.Matrix4(), hit = new THREE.Vector3();
 function doorAt(x, y) {
-  ndc.set((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1);
+  ndc.set((x / view2d.w) * 2 - 1, -(y / view2d.h) * 2 + 1);
   ray.setFromCamera(ndc, camera);
   ray.ray.applyMatrix4(inv.copy(cabinet.matrixWorld).invert());
   const o = ray.ray.origin, dir = ray.ray.direction;
@@ -453,6 +466,11 @@ canvas.addEventListener('pointerup', release);
 canvas.addEventListener('pointercancel', release);
 
 $('enter').addEventListener('click', enter);
+{
+  const b = $('sound'), show = () => { b.setAttribute('aria-pressed', String(!sound.muted)); b.setAttribute('aria-label', sound.muted ? TEXTS.soundOn : TEXTS.soundOff); };
+  b.addEventListener('click', (e) => { e.stopPropagation(); sound.setMuted(!sound.muted); show(); });
+  show();
+}
 $('close').addEventListener('click', closeDoor);
 ui.hint.querySelector('button').addEventListener('click', () => { const t = todayDoor(); if (t) openDoor(t); });
 addEventListener('keydown', (e) => {
@@ -534,13 +552,13 @@ function frame(ms) {
   ui.hint.classList.toggle('on', invite);
   if (invite) {
     anchor.set(td.cx, td.cy - GRID.opening / 2 - 0.06, GRID.front).applyMatrix4(cabinet.matrixWorld).project(camera);
-    ui.hint.style.transform = `translate(${((anchor.x + 1) / 2) * innerWidth}px, ${((1 - anchor.y) / 2) * innerHeight + 8}px)`;
+    ui.hint.style.transform = `translate(${((anchor.x + 1) / 2) * view2d.w}px, ${((1 - anchor.y) / 2) * view2d.h + 8}px)`;
   }
 
   // the playful line stays just under the cabinet, clear of the status line
   if (ui.tease.classList.contains('on')) {
     anchor.set(0, -GRID.height / 2 - 0.12, GRID.front).applyMatrix4(cabinet.matrixWorld).project(camera);
-    const y = Math.min(((1 - anchor.y) / 2) * innerHeight + 10, innerHeight - 150);
+    const y = Math.min(((1 - anchor.y) / 2) * view2d.h + 10, innerHeight - 150);
     ui.tease.style.top = y + 'px';
   }
 

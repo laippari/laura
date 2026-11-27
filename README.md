@@ -15,6 +15,14 @@ https://laippari.github.io/laura/
    ja alle tulee otsikko ja viesti. *Sulje luukku* palauttaa koko kalenteriin.
 4. Avatut luukut jäävät raolleen ja niihin voi palata. Tulevan päivän luukku vain kolahtaa, ja kaapin alle tulee *Malta vielä hetki, murunen 😘* (neljä versiota vuorotellen, `tooEarly` tiedostossa `src/content.js`).
 
+**Ääni:** soittorasia soittaa taustalla Kulkusia, We Wish You a Merry Christmasia ja Jouluyö, juhlayötä silmukassa,
+ja luukuilla on omat äänensä (avaus, sisällön paljastus, sulkeminen, liian aikainen napautus). Kaikki syntetisoidaan
+selaimessa (`src/sound.js`), joten äänitiedostoja ei ole. Selain sallii äänen vasta ensimmäisestä kosketuksesta, joten
+musiikki alkaa siitä. Oikean yläkulman nuottinappi mykistää, ja valinta muistetaan.
+
+**Koko näyttö:** neuletausta jatkuu puhelimen kameran ja selaimen osoitekentän taakse (`viewport-fit=cover`,
+`100lvh`); tekstit ja napit pysyvät turva-alueen sisällä. Androidilla osoitepalkki värjätään punaiseksi (`theme-color`).
+
 Luukut aukeavat laitteen kellon mukaan 1.–24.12.2026; sen jälkeen kaikki pysyvät auki. Avatut luukut muistetaan
 selaimessa (`localStorage`), eli muisti on laitekohtainen.
 
@@ -63,6 +71,7 @@ Samat toimivat julkaistulla sivulla, esim. `https://laippari.github.io/laura/?pa
 | `src/items.js` | Luukkujen 3D-esineet. |
 | `src/textures.js` | Proseduraaliset tekstuurit (puu, numerot, hehkut, taustan neulekuvio silmukka kerrallaan). |
 | `src/photos.js` | Paperikuvat: putoaminen ja läjä kaapin alla. Kuvat listataan `content.js`:n `PHOTOS`-listassa. |
+| `src/sound.js` | Musiikki ja äänet (Web Audio, ei tiedostoja). |
 | `src/backdrop.js` | Tausta: neulottu jouluseinä kaapin takana, lumisade ja pehmeät valot. |
 | `assets/` | Kuvat: `assets/kuvat/` paperikuville (neliö, 640 px, ei sijaintitietoja), muut `photo`-luukuille. |
 
