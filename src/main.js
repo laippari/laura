@@ -490,6 +490,7 @@ $('intro-text').textContent = TEXTS.introText;
 $('enter').textContent = TEXTS.enter;
 $('close').textContent = TEXTS.close;
 ui.hint.querySelector('button').textContent = TEXTS.hint;
+$('tap-text').textContent = TEXTS.tapToStart;
 
 // ---------- silmukka ----------
 
@@ -501,7 +502,13 @@ for (const d of cal.doors) { d.angle = d.target; d.glowNow = d.glowTo; } // open
 // A tap during the photos skips to the title.
 let skipParade = null;
 async function opening() {
-  await new Promise((r) => setTimeout(r, Math.max(0, 1900 - performance.now())));
+  await new Promise((r) => setTimeout(r, Math.max(0, 1500 - performance.now())));
+  // the heart waits for her tap: the browser lets the music start only from a tap, so it begins with the photos
+  document.body.classList.add('tap');
+  await new Promise((r) => {
+    const go = () => { $('loading').removeEventListener('click', go); r(); };
+    $('loading').addEventListener('click', go);
+  });
   document.body.classList.add('ready');
   photos.parade(timer.getElapsed());
   await Promise.race([wait(store.seen ? 3.2 : 5.2), new Promise((r) => { skipParade = r; })]);
