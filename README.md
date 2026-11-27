@@ -10,7 +10,8 @@ https://laippari.github.io/laura/
    otsikon *Laura ❤️ Ville* ympärille. Napista *Siirry kalenteriin* kuvat lentävät pois ja palaavat samaan sommitelmaan
    eri paikkoihin, ja kaappi laskeutuu keskelle. Napautus kuvien aikana hyppää suoraan otsikkoon.
 2. **Kalenteri** – kamera näyttää koko kaapin ja liukuu sitten päivän luukulle, jonka alla lukee *Avaa tästä*.
-   Luukut, jotka saa avata, hehkuvat reunoiltaan. Kaappia voi kallistella vetämällä.
+   Luukut, jotka saa avata, hehkuvat reunoiltaan. Kaappia voi kallistella vetämällä. Näkymässä ei ole pysyviä
+   tekstejä: napautus kaapin viereen näyttää kaapin alla kuplassa, mikä tilanne on (esim. montako yötä on jäljellä).
 3. **Luukku** – napautus avaa luukun, sisältö leijuu esiin omaan näkymäänsä (esinettä voi pyörittää vetämällä)
    ja alle tulee otsikko ja viesti. *Sulje luukku* palauttaa koko kalenteriin.
 4. Avatut luukut jäävät raolleen ja niihin voi palata. Tulevan päivän luukku vain kolahtaa, ja kaapin alle tulee *Malta vielä hetki, murunen 😘* (neljä versiota vuorotellen, `tooEarly` tiedostossa `src/content.js`).
@@ -81,5 +82,6 @@ three.js ladataan jsDelivr-CDN:stä (`three@0.186.1`, lukittu versio). Käännö
 
 ## Julkaisu
 
-Jokainen `main`-haaran push julkaisee sivun GitHub Pagesiin (`.github/workflows/pages.yml`).
+Jokainen `main`-haaran push julkaisee sivun GitHub Pagesiin (`.github/workflows/pages.yml`). Julkaisu lisää
+skriptien osoitteisiin versioleiman (`?v=<commit>`), joten puhelin ei aja välimuistista vanhaa versiota.
 Kertaluonteinen asetus: **Settings → Pages → Build and deployment → Source → GitHub Actions**.

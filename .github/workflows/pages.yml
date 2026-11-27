@@ -35,6 +35,11 @@ jobs:
           cp index.html _site/
           cp -r src _site/
           if [ -d assets ]; then cp -r assets _site/; fi
+          # versioleima: selain hakee jokaisen julkaisun skriptit uusina eikä aja välimuistin vanhoja moduuleja
+          V=${GITHUB_SHA::7}
+          sed -i "s#src=\"src/main.js\"#src=\"src/main.js?v=$V\"#" _site/index.html
+          sed -i "s#from '\./\([a-z]*\)\.js'#from './\1.js?v=$V'#g" _site/src/*.js
+          grep -q "main.js?v=$V" _site/index.html || { echo "versioleima puuttuu"; exit 1; }
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
