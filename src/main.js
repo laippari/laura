@@ -215,11 +215,7 @@ function poseOverview() {
   const d = fitDist(GRID.width * 1.36, GRID.height * 1.5), y = portrait() ? -0.95 : 0;
   return { pos: new THREE.Vector3(0, y, GRID.front + d), target: new THREE.Vector3(0, y, 0) };
 }
-function poseIntro() {
-  const p = poseOverview();
-  p.pos.z *= 1.15;
-  return p;
-}
+const poseIntro = poseOverview;
 function poseFocus(door) {
   const target = doorCenter(door).add(new THREE.Vector3(0, -0.14, 0));
   const dir = new THREE.Vector3(0.2, 0.04, 1).normalize();
@@ -244,7 +240,11 @@ function resize() {
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   if (!cameraMoving) { const p = poseOf(view); camPos.copy(p.pos); camTarget.copy(p.target); }
-  photos.layout(portrait());
+  {
+    // the part of the scene the camera sees at the photos' depth
+    const p = poseOverview(), hh = (p.pos.z + 1.5) * TAN;
+    photos.layout({ tall: portrait(), hw: hh * camera.aspect, hh, cy: p.target.y });
+  }
 }
 addEventListener('resize', resize);
 resize();
@@ -312,15 +312,17 @@ function toast(text) {
 let away = 1; // 1: the cabinet is still up above the view, 0: it has come down into place
 
 async function enter() {
-  if (mode !== 'intro') return;
+  if (mode !== 'intro' || !titled) return;
   mode = 'busy';
   $('intro').classList.add('gone');
   document.body.classList.add('cal');
   store.seen = true;
   save();
-  // the photos flutter down first, then the cabinet comes down in front of them
+  // the photos fly off, flutter back down into a heap, and the cabinet comes down in front of them
+  photos.exit(timer.getElapsed());
+  view = 'overview';
+  await wait(0.85);
   photos.drop(timer.getElapsed());
-  moveCamera('overview', 1.8);
   await wait(photos.duration() - 1.0);
   cabinet.visible = true;
   await tween(1.25, (k) => { away = 1 - k; backdrop.setShadow(k); }, easeOutSoft);
@@ -468,10 +470,7 @@ $('top').textContent = TEXTS.pageTitle;
 $('intro-eyebrow').textContent = TEXTS.introEyebrow;
 $('intro-title').textContent = TEXTS.introTitle;
 $('intro-text').textContent = TEXTS.introText;
-{
-  const t = now.today && !store.opened.has(now.today) ? now.today : 0;
-  $('enter').textContent = t === 1 ? TEXTS.enterFirst : t ? TEXTS.enterToday : TEXTS.enter;
-}
+$('enter').textContent = TEXTS.enter;
 $('close').textContent = TEXTS.close;
 ui.hint.querySelector('button').textContent = TEXTS.hint;
 
@@ -480,6 +479,22 @@ ui.hint.querySelector('button').textContent = TEXTS.hint;
 refreshDoors();
 for (const d of cal.doors) { d.angle = d.target; d.glowNow = d.glowTo; } // opened doors start ajar, without swinging
 { const p = poseIntro(); camPos.copy(p.pos); camTarget.copy(p.target); }
+
+// The opening: a short loading moment, the photos glide through the view, then the title with the photos around it.
+// A tap during the photos skips to the title.
+let titled = false, skipParade = null;
+async function opening() {
+  await new Promise((r) => setTimeout(r, Math.max(0, 1900 - performance.now())));
+  document.body.classList.add('ready');
+  photos.parade(timer.getElapsed());
+  await Promise.race([wait(store.seen ? 3.2 : 5.2), new Promise((r) => { skipParade = r; })]);
+  skipParade = null;
+  photos.frame(timer.getElapsed());
+  document.body.classList.add('titled');
+  await wait(0.9);
+  titled = true;
+}
+canvas.addEventListener('pointerdown', () => { if (skipParade) skipParade(); });
 
 const timer = new THREE.Timer(), anchor = new THREE.Vector3();
 let sway = 1, first = true;
@@ -532,7 +547,7 @@ function frame(ms) {
     renderer.clearDepth();
     renderer.render(stage.scene, camera);
   }
-  if (first) { first = false; requestAnimationFrame(() => document.body.classList.add('ready')); }
+  if (first) { first = false; requestAnimationFrame(opening); }
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

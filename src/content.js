@@ -17,10 +17,7 @@ export const TEXTS = {
   pageTitle: 'Lauran joulukalenteri',
   introEyebrow: 'Joulukuu 2026',
   introTitle: 'Laura ❤️ Ville',
-  introText: 'Joulukalenteri',
-  // aloitusnapin teksti: ensimmäinen luukku, jokin myöhempi päivän luukku, ei avattavaa juuri nyt
-  enterFirst: 'Avataan eka luukku',
-  enterToday: 'Avataan päivän luukku',
+  introText: 'Sinun joulukalenterisi, Villeltä',
   enter: 'Siirry kalenteriin',
   hint: 'Avaa tästä',
   close: 'Sulje luukku',
@@ -39,7 +36,7 @@ export const TEXTS = {
   noWebGL: 'Kalenteri tarvitsee selaimen, joka osaa piirtää 3D-grafiikkaa. Kokeile toisella selaimella tai laitteella.',
 };
 
-// Paperikuvat, jotka leijailevat alas ennen kalenteria ja jäävät läjään sen alle. Viimeiset jäävät päällimmäisiksi.
+// Paperikuvat aloituksessa ja kaapin luona. Listan viimeiset näkyvät ensimmäisinä ja jäävät päällimmäisiksi.
 export const PHOTOS = Array.from({ length: 15 }, (_, i) => `assets/kuvat/${String(i + 1).padStart(2, '0')}.jpg`);
 
 // HUOM: alla olevat tekstit ovat paikanpitäjiä, joilla perustoiminta on rakennettu. Korvaa omilla.
