@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#080305">
+  <meta name="theme-color" content="#a3112b">
   <meta name="color-scheme" content="dark">
   <meta name="robots" content="noindex, nofollow">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,12 +31,15 @@
     }
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
+    /* the knitted red behind everything, so the strips under the browser's bars and the camera match the wall */
+    html { background: #a3112b; }
     html, body {
       margin: 0; height: 100%; background: var(--bg); overflow: hidden; overscroll-behavior: none;
       -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
     }
     body { font: 400 16px/1.5 var(--sans); color: var(--cream); }
-    canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+    /* the canvas fills the large viewport: under the address bar and up behind the camera */
+    canvas#c { position: fixed; left: 0; top: 0; width: 100%; height: 100%; height: 100lvh; display: block; touch-action: none; outline: none; }
     button { font: inherit; color: inherit; cursor: pointer; }
 
     .btn {
@@ -54,7 +57,7 @@
 
     /* a short loading moment: a beating heart, until the scene is ready and she has had time to look */
     #loading {
-      position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--bg);
+      position: fixed; left: 0; top: 0; width: 100%; height: 100lvh; z-index: 20; display: grid; place-items: center; background: var(--bg);
       transition: opacity 0.9s ease, visibility 0s 0.9s; pointer-events: none;
     }
     body.ready #loading { opacity: 0; visibility: hidden; }
@@ -128,6 +131,17 @@
     }
     @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 5px; } }
 
+    #sound {
+      position: fixed; right: calc(14px + env(safe-area-inset-right, 0px)); top: calc(12px + var(--safe-t)); z-index: 8;
+      width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.22); padding: 0;
+      background: rgba(30, 6, 12, 0.42); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+      display: grid; place-items: center; color: var(--cream); opacity: 0; transition: opacity 0.8s var(--ease);
+    }
+    body.ready #sound { opacity: 0.9; }
+    #sound svg { width: 20px; height: 20px; }
+    #sound .off { display: none; }
+    #sound[aria-pressed="false"] .on { display: none; }
+    #sound[aria-pressed="false"] .off { display: block; }
     #tease {
       position: fixed; left: 50%; top: 70%; z-index: 6; transform: translate(-50%, 0) scale(0.9); opacity: 0;
       padding: 12px 22px; border-radius: 999px; background: var(--cream); color: #5a1220; white-space: nowrap; pointer-events: none;
@@ -178,6 +192,10 @@
   <div id="hint"><button type="button"></button></div>
   <div id="status"><span></span><button class="btn small" type="button" hidden></button></div>
   <div id="tease" role="status"></div>
+  <button id="sound" type="button" aria-pressed="true">
+    <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+    <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/><path d="M3 3l18 18"/></svg>
+  </button>
 
   <section id="card" aria-live="polite">
     <p class="eyebrow" id="card-eyebrow"></p>
