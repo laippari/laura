@@ -206,7 +206,7 @@ const wide = matchMedia('(min-width: 760px) and (min-aspect-ratio: 1/1)'); // sa
 const portrait = () => !wide.matches;
 
 function poseOverview() {
-  const d = fitDist(GRID.width * 1.14, GRID.height * 1.32);
+  const d = fitDist(GRID.width * 1.36, GRID.height * 1.5); // room around the cabinet for the knitted wall
   return { pos: new THREE.Vector3(0, 0, GRID.front + d), target: new THREE.Vector3(0, 0, 0) };
 }
 function poseIntro() {
