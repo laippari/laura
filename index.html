@@ -57,9 +57,9 @@
 
     /* welcome */
     #intro {
-      position: fixed; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-      gap: 16px; padding: 0 28px calc(9vh + var(--safe-b)); text-align: center;
-      background: linear-gradient(to top, rgba(8, 3, 5, 0.94) 0%, rgba(8, 3, 5, 0.7) 26%, rgba(8, 3, 5, 0) 58%);
+      position: fixed; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; padding: 0 24px calc(4vh + var(--safe-b)); text-align: center;
+      background: radial-gradient(ellipse 85% 60% at 50% 48%, rgba(8, 3, 5, 0.8) 0%, rgba(8, 3, 5, 0.55) 55%, rgba(8, 3, 5, 0.15) 100%);
       transition: opacity 0.7s var(--ease), visibility 0s 0.7s;
     }
     #intro.gone { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -69,8 +69,8 @@
     body.ready #intro > :nth-child(2) { transition-delay: 0.7s; }
     body.ready #intro > :nth-child(3) { transition-delay: 0.9s; }
     body.ready #intro > :nth-child(4) { transition-delay: 1.15s; }
-    #intro h1 { margin: 0; font: 500 clamp(42px, 11vw, 76px)/1.02 var(--serif); letter-spacing: -0.01em; text-wrap: balance; }
-    #intro p.lead { margin: 0 0 12px; max-width: 30ch; color: var(--cream-2); font-size: 16.5px; text-wrap: balance; }
+    #intro h1 { margin: 6px 0 0; font: 500 clamp(44px, 12.5vw, 92px)/1.05 var(--serif); letter-spacing: -0.01em; white-space: nowrap; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
+    #intro p.lead { margin: 0 0 26px; color: var(--cream); font: italic 500 clamp(26px, 7vw, 40px)/1.1 var(--serif); text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6); }
 
     /* calendar chrome: the title and the status line stay readable over the knitted wall */
     body::before, body::after {
@@ -137,14 +137,6 @@
     #fail {
       position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 32px; text-align: center;
       background: var(--bg); color: var(--cream-2);
-    }
-    @media (min-width: 760px) and (min-aspect-ratio: 1/1) {
-      #intro {
-        align-items: flex-start; justify-content: center; text-align: left; padding: 0 0 0 clamp(40px, 9vw, 150px);
-        background: linear-gradient(to right, rgba(8, 3, 5, 0.82) 0%, rgba(8, 3, 5, 0.45) 38%, rgba(8, 3, 5, 0) 62%);
-      }
-      #intro h1 { font-size: clamp(46px, min(7vw, 13vh), 96px); max-width: 8ch; }
-      #intro p.lead { max-width: 28ch; margin-bottom: 18px; }
     }
     @media (prefers-reduced-motion: reduce) { #hint button { animation: none; } }
   </style>
