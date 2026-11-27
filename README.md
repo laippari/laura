@@ -6,8 +6,9 @@ https://laippari.github.io/laura/
 
 ## Miten se toimii
 
-1. **Aloitus** – *Laura ❤️ Ville · Joulukalenteri* neuletaustan päällä ja nappi (*Avataan eka luukku*).
-   Napista valokuvat leijailevat ylhäältä alas läjään, ja kaappi laskeutuu niiden eteen.
+1. **Aloitus** – lyhyt lataus (sykkivä sydän), sitten valokuvat liukuvat isoina näkymän läpi ja asettuvat reunoille
+   otsikon *Laura ❤️ Ville* ympärille. Napista *Siirry kalenteriin* kuvat lentävät pois, leijailevat läjään ja kaappi
+   laskeutuu niiden eteen. Napautus kuvien aikana hyppää suoraan otsikkoon.
 2. **Kalenteri** – kamera näyttää koko kaapin ja liukuu sitten päivän luukulle, jonka alla lukee *Avaa tästä*.
    Luukut, jotka saa avata, hehkuvat reunoiltaan. Kaappia voi kallistella vetämällä.
 3. **Luukku** – napautus avaa luukun, sisältö leijuu esiin omaan näkymäänsä (esinettä voi pyörittää vetämällä)
