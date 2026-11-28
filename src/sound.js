@@ -16,7 +16,7 @@ const freq = (name) => {
 // Melodies as "note:beats", a bass note for each bar, and the tempo in beats per minute.
 const SONGS = [
   { // Deck the Halls (fa-la-la-la-la), reipas aloitus
-    bpm: 160, bar: 4, bells: true, times: 2,
+    bpm: 192, bar: 4, bells: true, times: 2,
     tune: 'G5:1.5 F5:0.5 E5:1 D5:1 C5:1 D5:1 E5:1 C5:1 D5:0.5 E5:0.5 F5:0.5 D5:0.5 E5:1.5 D5:0.5 C5:1 B4:1 C5:2 ' +
       'G5:1.5 F5:0.5 E5:1 D5:1 C5:1 D5:1 E5:1 C5:1 D5:0.5 E5:0.5 F5:0.5 D5:0.5 E5:1.5 D5:0.5 C5:1 B4:1 C5:2 ' +
       'D5:1.5 E5:0.5 F5:1 D5:1 E5:1.5 F5:0.5 G5:1 D5:1 E5:0.5 F#5:0.5 G5:1 A5:0.5 B5:0.5 C6:1 B5:1 A5:1 G5:2 ' +
@@ -24,7 +24,7 @@ const SONGS = [
     bass: 'C3 C3 G2 C3 C3 C3 G2 C3 G2 C3 D3 G2 C3 C3 F2 C3',
   },
   { // Kulkuset (Jingle Bells), kertosäe kahdesti
-    bpm: 168, bar: 4, bells: true, times: 2,
+    bpm: 204, bar: 4, bells: true, times: 2,
     tune: 'E5:1 E5:1 E5:2 E5:1 E5:1 E5:2 E5:1 G5:1 C5:1.5 D5:0.5 E5:4 ' +
       'F5:1 F5:1 F5:1.5 F5:0.5 F5:1 E5:1 E5:1 E5:0.5 E5:0.5 E5:1 D5:1 D5:1 E5:1 D5:2 G5:2 ' +
       'E5:1 E5:1 E5:2 E5:1 E5:1 E5:2 E5:1 G5:1 C5:1.5 D5:0.5 E5:4 ' +
@@ -32,13 +32,13 @@ const SONGS = [
     bass: 'C3 C3 C3 C3 F3 C3 D3 G2 C3 C3 C3 C3 F3 C3 G2 C3',
   },
   { // We Wish You a Merry Christmas
-    bpm: 150, bar: 3, pickup: 1, times: 2,
+    bpm: 182, bar: 3, pickup: 1, times: 2,
     tune: 'D5:1 G5:1 G5:0.5 A5:0.5 G5:0.5 F#5:0.5 E5:1 E5:1 E5:1 A5:1 A5:0.5 B5:0.5 A5:0.5 G5:0.5 F#5:1 D5:1 D5:1 ' +
       'B5:1 B5:0.5 C6:0.5 B5:0.5 A5:0.5 G5:1 E5:1 D5:0.5 D5:0.5 E5:1 A5:1 F#5:1 G5:3',
     bass: 'G2 C3 A2 D3 B2 C3 D3 G2',
   },
   { // Jouluyö, juhlayö (Stille Nacht)
-    bpm: 210, bar: 6, times: 1,
+    bpm: 252, bar: 6, times: 1,
     tune: 'G5:3 A5:1 G5:2 E5:6 G5:3 A5:1 G5:2 E5:6 D6:4 D6:2 B5:6 C6:4 C6:2 G5:6 ' +
       'A5:4 A5:2 C6:3 B5:1 A5:2 G5:3 A5:1 G5:2 E5:6 A5:4 A5:2 C6:3 B5:1 A5:2 G5:3 A5:1 G5:2 E5:6 ' +
       'D6:4 D6:2 F6:3 D6:1 B5:2 C6:6 E6:6 C6:3 G5:1 E5:2 G5:3 F5:1 D5:2 C5:12',
@@ -235,11 +235,12 @@ export function createSound({ storageKey }) {
     const p = music.play();
     if (p && p.catch) p.catch(() => {});
   }
-  music.addEventListener('ended', () => {
-    if (music.src === quiet) return;
+  // on to the next song that is ready
+  function next() {
     do song = (song + 1) % SONGS.length; while (!songs[song]);
     if (wanted && !muted && !document.hidden) playMusic();
-  });
+  }
+  music.addEventListener('ended', () => { if (music.src !== quiet) next(); });
 
   // Sound may only start from a tap. Inside each tap until it all works: wake the audio element, and the Web Audio
   // context with a silent sound, which is what iOS asks for.
@@ -293,6 +294,7 @@ export function createSound({ storageKey }) {
 
   return {
     setMuted, get muted() { return muted; },
+    next: () => { if (songs[0]) next(); },
     open: () => fx('open'), reveal: () => fx('reveal'), close: () => fx('close'), locked: () => fx('locked'),
     get ready() { return !!songs[0]; }, get playing() { return !music.paused && music.src !== quiet; },
   };

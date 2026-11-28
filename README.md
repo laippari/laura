@@ -21,7 +21,7 @@ https://laippari.github.io/laura/
 Jouluyö, juhlayötä,
 ja luukuilla on omat äänensä (avaus, sisällön paljastus, sulkeminen, liian aikainen napautus). Äänet syntetisoidaan
 selaimessa ja nauhoitetaan latauksen jälkeen WAV-muotoon (`src/sound.js`). Musiikki soi audio-elementillä, joka soi
-iPhonessa myös äänettömällä. Selain sallii äänen vasta ensimmäisestä kosketuksesta, joten musiikki alkaa siitä.
+iPhonessa myös äänettömällä. Selain sallii äänen vasta ensimmäisestä kosketuksesta, joten musiikki alkaa siitä, ja kalenteriin siirryttäessä vaihtuu seuraava laulu.
 Oikean yläkulman nuottinappi mykistää, ja valinta muistetaan.
 
 **Koko näyttö:** puhelimen selain näyttää osoitekentän ja kameran alla sivun oman taustan, joten sivun taustana on
