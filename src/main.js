@@ -332,6 +332,7 @@ async function enter() {
   document.body.classList.add('cal');
   store.seen = true;
   save();
+  sound.next(); // a new song for the calendar
   // the photos fly off and come back to the same composition in other places, and the cabinet comes down among them
   photos.exit(timer.getElapsed());
   view = 'overview';
