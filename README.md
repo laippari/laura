@@ -6,7 +6,7 @@ https://laippari.github.io/laura/
 
 ## Miten se toimii
 
-1. **Aloitus** – sykkivä sydän ja *Napauta sydäntä, kulta*: napautus käynnistää musiikin (selain sallii äänen vasta
+1. **Aloitus** – sykkivä sydän ja *Napauta sydäntä*: napautus käynnistää musiikin (selain sallii äänen vasta
    napautuksesta), sitten valokuvat liukuvat isoina näkymän läpi ja asettuvat reunoille
    otsikon *Laura ❤️ Ville* ympärille. Napista *Siirry kalenteriin* kuvat lentävät pois ja palaavat samaan sommitelmaan
    eri paikkoihin, ja kaappi laskeutuu keskelle. Napautus kuvien aikana hyppää suoraan otsikkoon.

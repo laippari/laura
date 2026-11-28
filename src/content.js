@@ -16,7 +16,7 @@ export const SETTINGS = {
 export const TEXTS = {
   pageTitle: 'Lauran joulukalenteri',
   introEyebrow: 'Joulukuu 2026',
-  tapToStart: 'Napauta sydäntä, kulta',
+  tapToStart: 'Napauta sydäntä',
   introTitle: 'Laura ❤️ Ville',
   introText: 'Tässä muru sulle joulukalenteri 😘',
   enter: 'Siirry kalenteriin',
